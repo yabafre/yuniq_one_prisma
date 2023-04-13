@@ -76,57 +76,89 @@ class AdminService{
      * @param {array} sizes
      */
     updateSneaker = async (sneakerId, sneakerData, images, sizes) => {
-        // Vérifiez d'abord si les tailles existent déjà ou doivent être créées
-        const existingSizes = await prisma.size.findMany();
-        const missingSizes = sizes.filter((size) => !existingSizes.find((s) => s.id === size.size));
+        const updateData = {};
 
-        if (missingSizes.length > 0) {
-            const createdSizes = await prisma.size.createMany({
-                data: missingSizes.map((size) => ({
-                    id: size.size,
-                    size: size.size
-                })),
-            });
-            existingSizes.push(...Array.from(createdSizes));
+        if(sneakerData.status !== undefined){
+            updateData.status = sneakerData.status;
         }
 
-        // Mise à jour des tailles de sneakers et suppression des anciennes relations
-        await prisma.sneaker.update({
-            where: { id: parseInt(sneakerId) },
-            data: {
-                sizeSneaker: {
-                    deleteMany: {},
+        if (sneakerData.name !== undefined) {
+            updateData.name = sneakerData.name;
+        }
+
+        if (sneakerData.description !== undefined) {
+            updateData.description = sneakerData.description;
+        }
+
+        if (sneakerData.price !== undefined) {
+            updateData.price = parseFloat(sneakerData.price);
+        }
+
+        if (images[0] !== undefined) {
+            updateData.image_url = images[0];
+        }
+
+        if (images[1] !== undefined) {
+            updateData.image_url2 = images[1];
+        }
+
+        if (images[2] !== undefined) {
+            updateData.image_url3 = images[2];
+        }
+
+        if (sneakerData.stock !== undefined) {
+            updateData.stock = parseInt(sneakerData.stock, 10);
+        }
+
+        const parsedCollectionId = parseInt(sneakerData.collectionId, 10);
+        if (!isNaN(parsedCollectionId)) {
+            updateData.relatedCollections = {
+                connect: {
+                    id: parsedCollectionId,
                 },
-            },
-        });
+            };
+        }
+
+
+        if (sizes.length > 0) {
+            // Vérifiez d'abord si les tailles existent déjà ou doivent être créées
+            const existingSizes = await prisma.size.findMany();
+            const missingSizes = sizes.filter((size) => !existingSizes.find((s) => s.id === size.size));
+
+            if (missingSizes.length > 0) {
+                const createdSizes = await prisma.size.createMany({
+                    data: missingSizes.map((size) => ({
+                        id: size.size,
+                        size: size.size
+                    })),
+                });
+                existingSizes.push(...Array.from(createdSizes));
+            }
+
+            // Mise à jour des tailles de sneakers et suppression des anciennes relations
+            await prisma.sneaker.update({
+                where: { id: parseInt(sneakerId) },
+                data: {
+                    sizeSneaker: {
+                        deleteMany: {},
+                    },
+                },
+            });
+
+            // Ajoutez les nouvelles tailles à updateData
+            updateData.sizeSneaker = {
+                create: sizes.map((size) => ({
+                    size: { connect: { id: size.size } },
+                })),
+            };
+        }
 
         // Mise à jour du sneaker avec les nouvelles données et relations
         const updatedSneaker = await prisma.sneaker.update({
             where: {
                 id: parseInt(sneakerId),
             },
-            data: {
-                name: sneakerData.name,
-                description: sneakerData.description,
-                price: parseFloat(sneakerData.price),
-                image_url: images[0],
-                image_url2: images[1],
-                image_url3: images[2],
-                status: sneakerData.status,
-                stock: parseInt(sneakerData.stock),
-                relatedCollections: parseInt(sneakerData.collectionId)
-                    ? {
-                        connect: {
-                            id: parseInt(sneakerData.collectionId),
-                        },
-                    }
-                    : undefined,
-                sizeSneaker: {
-                    create: sizes.map((size) => ({
-                        size: { connect: { id: size.size } },
-                    })),
-                },
-            },
+            data: updateData,
             include: {
                 sizeSneaker: {
                     include: {
