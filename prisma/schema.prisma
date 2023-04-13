@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int             @id @default(autoincrement())
+  firstname            String
+  lastname             String
+  email                String          @unique
+  password             String
+  token                String          @unique
+  isAdmin              Boolean         @default(false)
+  phone                String
+  avatar               String?
+  city                 String
+  location             String
+  zip                  String
+  stripeCustomerId     String?
+  subscription         Subscription?   @relation(fields: [subscriptionId], references: [id])
+  subscriptionId       Int?
+  stripeSubscriptionId String?
+  purchases            Purchase[]
+  paymentDetails       PaymentDetail[]
+  events               Event[]         @relation("UserEvents")
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+}
+
+model Subscription {
+  id                 Int          @id @default(autoincrement())
+  name               String
+  price              Float
+  image              String       @default("https://www.placeholder.com/200/300")
+  description        String
+  stripeProductId    String?
+  stripePriceId      String?
+  relatedCollections Collection[] // Si vous avez un modèle Collection
+  users              User[] // Pour établir la relation avec les utilisateurs
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Collection {
+  id            Int            @id @default(autoincrement())
+  name          String
+  image         String         @default("https://www.placeholder.com/200/300")
+  description   String
+  sneakers      Sneaker[]
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Sneaker {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  image_url          String         @default("https://www.placeholder.com/200/300")
+  image_url2         String         @default("https://www.placeholder.com/200/300")
+  image_url3         String         @default("https://www.placeholder.com/200/300")
+  description        String
+  sizeSneaker        sizeSneaker[]
+  relatedCollections Collection[]
+  relatedEvents      EventSneaker[]
+  purchases          Purchase[]
+  price              Float?
+  stock              Int            @default(99)
+  status             SneakerStatus  @default(available)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+}
+
+model sizeSneaker {
+  id        Int     @id @default(autoincrement())
+  sizeId    Int
+  size      Size    @relation(fields: [sizeId], references: [id])
+  sneakerId Int
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+  // Ajoutez la relation inverse pour le modèle Size
+  // Size      Size[]    @relation("SizeSneakerSize")
+}
+
+model Size {
+  id           Int           @id @default(autoincrement())
+  size         Int
+  sizeSneakers sizeSneaker[] // Ajoutez la relation inverse pour le modèle sizeSneaker
+}
+
+enum SneakerStatus {
+  pending
+  available
+  sold_out
+}
+
+model Purchase {
+  id           Int            @id @default(autoincrement())
+  user         User           @relation(fields: [userId], references: [id])
+  userId       Int
+  sneaker      Sneaker        @relation(fields: [sneakerId], references: [id])
+  sneakerId    Int
+  quantity     Int            @default(1)
+  price        Float
+  status       PurchaseStatus @default(pending)
+  userStripeId String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+enum PurchaseStatus {
+  pending
+  paid
+  shipped
+  delivered
+  cancelled
+  complete
+}
+
+model PaymentDetail {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int
+  subscriptionId String
+  amount         Float
+  status         String
+  cardId         String
+  brand          String
+  last4          String
+  expMonth       Int
+  expYear        Int
+  date           DateTime
+}
+
+model Event {
+  id        Int            @id @default(autoincrement())
+  name      String
+  date      DateTime
+  image     String
+  sneakers  EventSneaker[]
+  users     User[]         @relation("UserEvents")
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+// Relations
+model EventSneaker {
+  id        Int     @id @default(autoincrement())
+  eventId   Int
+  event     Event   @relation(fields: [eventId], references: [id])
+  sneakerId Int
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+}
+
+model codePromo {
+  id        Int      @id @default(autoincrement())
+  code      String
+  discount  String
+  maxRedeem Int
+  endTime   String
+  duration  String
+  valid     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
