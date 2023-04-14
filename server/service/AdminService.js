@@ -40,9 +40,9 @@ class AdminService{
                 name: sneakerData.name,
                 description: sneakerData.description,
                 price: parseFloat(sneakerData.price),
-                image_url: images[0],
-                image_url2: images[1],
-                image_url3: images[2],
+                image_url: images.image_url,
+                image_url2: images.image_url2,
+                image_url3: images.image_url3,
                 status: sneakerData.status,
                 stock: parseInt(sneakerData.stock),
                 relatedCollections: {
@@ -94,16 +94,16 @@ class AdminService{
             updateData.price = parseFloat(sneakerData.price);
         }
 
-        if (images[0] !== undefined) {
-            updateData.image_url = images[0];
+        if (images.image_url !== undefined) {
+            updateData.image_url = images.image_url;
         }
 
-        if (images[1] !== undefined) {
-            updateData.image_url2 = images[1];
+        if (images.image_url2 !== undefined) {
+            updateData.image_url2 = images.image_url2;
         }
 
-        if (images[2] !== undefined) {
-            updateData.image_url3 = images[2];
+        if (images.image_url3 !== undefined) {
+            updateData.image_url3 = images.image_url3;
         }
 
         if (sneakerData.stock !== undefined) {
@@ -135,16 +135,6 @@ class AdminService{
                 existingSizes.push(...Array.from(createdSizes));
             }
 
-            // Mise à jour des tailles de sneakers et suppression des anciennes relations
-            await prisma.sneaker.update({
-                where: { id: parseInt(sneakerId) },
-                data: {
-                    sizeSneaker: {
-                        deleteMany: {},
-                    },
-                },
-            });
-
             // Ajoutez les nouvelles tailles à updateData
             updateData.sizeSneaker = {
                 create: sizes.map((size) => ({
@@ -171,22 +161,32 @@ class AdminService{
         return updatedSneaker;
     };
     deleteSneaker = async (sneakerId) => {
-        const sneaker = await prisma.sneaker.findUnique({
+        const deletedSneaker = await prisma.sneaker.findUnique({
+            where: {
+                id: parseInt(sneakerId),
+            },
+            include: {
+                sizeSneaker: true,
+                relatedCollections: true,
+                relatedEvents: {
+                    include: {
+                        event: true,
+                    },
+                },
+            },
+        });
+
+        if (!deletedSneaker) {
+            return 'Sneaker not found';
+        }
+
+        await prisma.sneaker.deleteMany({
             where: {
                 id: parseInt(sneakerId),
             }
         });
-        if (sneaker) {
-            await prisma.sneaker.delete({
-                where: {
-                    id: parseInt(sneakerId),
-                }
-            });
-            return 'Sneaker deleted';
-        } else {
-            return 'Sneaker not found';
-        }
-    }
+        return 'Sneaker deleted';
+    };
     addSizesToSneaker = async (sneakerId, sizes) => {
         // Vérifiez d'abord si les tailles existent déjà ou doivent être créées
         const existingSizes = await prisma.size.findMany();
@@ -225,7 +225,7 @@ class AdminService{
 
         return updatedSneaker;
     };
-    deleteSizesFromSneaker = async (sneakerId, sizes) => {
+    deleteSizeFromSneaker = async (sneakerId, size) => {
         // Trouver le sneaker par ID
         const sneaker = await prisma.sneaker.findUnique({
             where: {
@@ -245,7 +245,7 @@ class AdminService{
             where: {
                 sneakerId: parseInt(sneakerId),
                 sizeId: {
-                    in: sizes.map((size) => size.size),
+                    in: size,
                 },
             },
         });
@@ -271,10 +271,30 @@ class AdminService{
             data: {
                 name: collectionData.name,
                 description: collectionData.description,
+                image: collectionData.image,
             }
         });
         return collection;
     };
+    updateCollection = async (collectionId, collectionData) => {
+        const updateData = {};
+        if (collectionData.name !== undefined) {
+            updateData.name = collectionData.name;
+        }
+        if (collectionData.description !== undefined) {
+            updateData.description = collectionData.description;
+        }
+        if (collectionData.image !== undefined) {
+            updateData.image = collectionData.image;
+        }
+        const collection = await prisma.collection.update({
+            where: {
+                id: parseInt(collectionId),
+            },
+            data: updateData,
+        });
+        return collection;
+    }
     deleteCollection = async (collectionId) => {
         const collection = await prisma.collection.findUnique({
             where: {
@@ -292,67 +312,67 @@ class AdminService{
             return 'Collection not found';
         }
     }
-    addSubscription = async (subscriptionData, collection, image) => {
+    addSubscription = async (subscriptionData) => {
         const subscription = await prisma.subscription.create({
             data: {
                 name: subscriptionData.name,
                 description: subscriptionData.description,
                 price: parseInt(subscriptionData.price),
-                image: image,
+                image: subscriptionData.image,
+                interval: subscriptionData.interval,
+                intervalCount: parseInt(subscriptionData.intervalCount),
                 relatedCollections: {
                     connect: {
-                        id: parseInt(collection),
+                        id: parseInt(subscriptionData.collection),
                     }
                 }
             }
         });
         return subscription;
     };
-    updateSubscription = async (subscriptionId, productPriceStripe, priceStripe) => {
+    updateSubscription = async (subscriptionId, subscriptionData) => {
         const subscription = await prisma.subscription.update({
             where: {
                 id: parseInt(subscriptionId),
             },
-            data: {
-                stripeProductId: productPriceStripe,
-                stripePriceId: priceStripe
-            }
+            data: subscriptionData,
         });
         console.log('update : ',subscription);
         return subscription;
     }
     deleteSubscription = async (subscriptionId) => {
-        const subscription = await prisma.subscription.findUnique({
-            where: {
-                id: parseInt(subscriptionId),
-            }
-        });
-        if (subscription) {
-            await stripe.products.del(subscription.stripeProductId)
-                .then((res) => {
-                    console.log('delete product : ',res);
-                    stripe.prices.del(subscription.stripePriceId).then((res) => {
-                        console.log('delete price : ',res);
-                        prisma.subscription.delete({
-                            where: {
-                                id: parseInt(subscriptionId),
-                            }
-                        }).then((res) => {
-                            return `Delete subscription success`;
-                        }).catch((err) => {
-                            return `Delete subscription error: ${err}`;
-                        });
-                    }).catch((err) => {
-                        console.log('delete price error : ',err);
-                    });
-                })
-                .catch((err) => {
-                    return `Delete product error: ${err}`;
+        try {
+            const subscription = await prisma.subscription.findUnique({
+                where: {
+                    id: parseInt(subscriptionId),
+                },
+            });
+
+            if (subscription) {
+                // Get the prices associated with the product
+                const prices = await stripe.prices.list({
+                    product: subscription.stripeProductId,
                 });
-        } else {
-            return 'Subscription not found';
+
+                if (prices.data.length === 0) {
+                    // Delete the product
+                    await stripe.products.del(subscription.stripeProductId);
+                    await prisma.subscription.delete({
+                        where: {
+                            id: parseInt(subscriptionId),
+                        },
+                    });
+                    return `Delete subscription success`;
+                } else {
+                    return `Product ${subscription.stripeProductId} cannot be deleted because it has one or more user-created prices.`;
+                }
+            } else {
+                return 'Subscription not found';
+            }
+        } catch (err) {
+            return `Delete subscription error: ${err}`;
         }
-    }
+    };
     addPromoCode = async (promoCodeData) => {
         const promoCode = await prisma.codePromo.create({
             data: {
@@ -401,7 +421,52 @@ class AdminService{
             throw new Error('Error uploading image');
         }
     }
+    // deleteImage all images to Cloudinary by public_id
+    deleteImage = async () => {
+        try {
+            // Récupérer toutes les images du dossier "sneakers" sur Cloudinary
+            const { resources } = await cloudinary.api.resources({
+                type: "upload",
+                prefix: "sneakers",
+                max_results: 500,
+            });
 
+            // Parcourir chaque image
+            for (const resource of resources) {
+                // Vérifier si l'image est utilisée dans les tables de la base de données
+                const subscriptions = await prisma.subscription.findMany({
+                    where: { image: resource.secure_url },
+                });
+                const collections = await prisma.collection.findMany({
+                    where: { image: resource.secure_url },
+                });
+                const events = await prisma.event.findMany({
+                    where: { image: resource.secure_url },
+                });
+                const sneakers_url = await prisma.sneaker.findMany({
+                    where: { image_url: resource.secure_url },
+                });
+                const sneakers_url2 = await prisma.sneaker.findMany({
+                    where: { image_url2: resource.secure_url },
+                });
+                const sneakers_url3 = await prisma.sneaker.findMany({
+                    where: { image_url3: resource.secure_url },
+                });
+                const user = await prisma.user.findMany({
+                    where: { avatar: resource.secure_url },
+                });
+                // Si l'image n'est pas utilisée, la supprimer de Cloudinary
+                if (subscriptions.length === 0 && collections.length === 0 && events.length === 0 && sneakers_url.length === 0 && sneakers_url2.length === 0 && sneakers_url3.length === 0 && user.length === 0) {
+                    await cloudinary.uploader.destroy(resource.public_id);
+                }
+            }
+
+            return "Suppression des images inutilisées terminée.";
+        } catch (error) {
+            console.error("Erreur lors de la suppression des images :", error);
+            return "Erreur lors de la suppression des images.";
+        }
+    };
 }
 
 module.exports = new AdminService();

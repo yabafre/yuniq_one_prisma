@@ -34,17 +34,27 @@ model User {
 }
 
 model Subscription {
-  id                 Int          @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   name               String
   price              Float
-  image              String       @default("https://www.placeholder.com/200/300")
+  image              String               @default("https://www.placeholder.com/200/300")
   description        String
   stripeProductId    String?
   stripePriceId      String?
+  interval           SubscriptionInterval @default(month)
+  intervalCount      Int                  @default(1)
   relatedCollections Collection[] // Si vous avez un modèle Collection
   users              User[] // Pour établir la relation avec les utilisateurs
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+// "day", "week", "month", "year"
+enum SubscriptionInterval {
+  day
+  week
+  month
+  year
 }
 
 model Collection {
@@ -68,7 +78,6 @@ model Sneaker {
   sizeSneaker        sizeSneaker[]
   relatedCollections Collection[]
   relatedEvents      EventSneaker[]
-  purchases          Purchase[]
   price              Float?
   stock              Int            @default(99)
   status             SneakerStatus  @default(available)
@@ -81,7 +90,7 @@ model sizeSneaker {
   sizeId    Int
   size      Size    @relation(fields: [sizeId], references: [id])
   sneakerId Int
-  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   // Ajoutez la relation inverse pour le modèle Size
   // Size      Size[]    @relation("SizeSneakerSize")
 }
@@ -102,7 +111,7 @@ model Purchase {
   id           Int            @id @default(autoincrement())
   user         User           @relation(fields: [userId], references: [id])
   userId       Int
-  sneaker      Sneaker        @relation(fields: [sneakerId], references: [id])
+  sneaker      String
   sneakerId    Int
   quantity     Int            @default(1)
   price        Float
@@ -153,7 +162,7 @@ model EventSneaker {
   eventId   Int
   event     Event   @relation(fields: [eventId], references: [id])
   sneakerId Int
-  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model codePromo {
