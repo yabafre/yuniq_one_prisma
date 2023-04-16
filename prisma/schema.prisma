@@ -109,11 +109,10 @@ enum SneakerStatus {
 
 model Purchase {
   id           Int            @id @default(autoincrement())
-  user         User           @relation(fields: [userId], references: [id])
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId       Int
   sneaker      String
   sneakerId    Int
-  quantity     Int            @default(1)
   price        Float
   status       PurchaseStatus @default(pending)
   userStripeId String
@@ -132,16 +131,13 @@ enum PurchaseStatus {
 
 model PaymentDetail {
   id             Int      @id @default(autoincrement())
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId         Int
   subscriptionId String
   amount         Float
   status         String
-  cardId         String
   brand          String
   last4          String
-  expMonth       Int
-  expYear        Int
   date           DateTime
 }
 

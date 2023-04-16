@@ -10,11 +10,15 @@ class ProfileController{
     profile = async (req, res) => {
         const userId = req.user.id;
         const userProfile = await UserService.getUserProfile(userId);
-        res.json(userProfile);
+        // res data : user profile
+        res.status(200).json({data: userProfile});
     };
 
     updateProfile = async (req, res) => {
         const userId = req.user.id;
+        if (req.file) {
+            req.body.avatar = await UserService.uploadImage(req.file);
+        }
         const updatedProfile = await UserService.updateUserProfile(userId, req.body);
         res.json(updatedProfile);
     };
@@ -30,10 +34,10 @@ class ProfileController{
                 await stripe.subscriptions.update(stripeSubscriptionId, {
                     cancel_at_period_end: true,
                 });
+                await stripe.customers.del(user.stripeCustomerId);
             }
             // Supprimez le profil de l'utilisateur dans votre base de données
             const deleteById = await UserService.deleteUserProfile(userId);
-            await stripe.customers.del(user.stripeCustomerId);
             res.json({ message: deleteById });
         } catch (error) {
             res.status(500).json({ message: "Erreur lors de la suppression du profil", error });
@@ -43,13 +47,19 @@ class ProfileController{
     getSubscriptions = async (req, res) => {
         const userId = req.user.id;
         const subscriptions = await UserService.getUserSubscriptions(userId);
-        res.json(subscriptions);
+        if (subscriptions === null) {
+            return res.status(400).json({ message: "Nothing subscription"});
+        }
+        res.status(200).json({ message: "Subscription found", data: subscriptions });
     };
 
     getPurchases = async (req, res) => {
         const userId = req.user.id;
         const purchases = await UserService.getUserPurchases(userId);
-        res.json(purchases);
+        if (purchases.length === 0) {
+            return res.status(400).json({ message: "Nothing purchases"});
+        }
+        res.status(200).json({ message: "Purchases found", data: purchases });
     };
 
     updateSubscribtion = async (req, res) => {

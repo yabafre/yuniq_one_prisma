@@ -1,4 +1,5 @@
 const express = require('express');
+const upload = require('../middleware/uploads-multer');
 const authMiddleware = require("../middleware/auth");
 const ProfileController = require ("../controller/ProfileController");
 
@@ -8,14 +9,14 @@ exports.router = (() => {
     router.use(authMiddleware);
     // route profile
     router.route('/').get(ProfileController.profile);
-    router.route('/').put(ProfileController.updateProfile);
-    router.route('/subscribtion').get(ProfileController.getSubscriptions);
+    router.route('/').put(upload.single('avatar'),ProfileController.updateProfile);
+    router.route('/subscription').get(ProfileController.getSubscriptions);
     router.route('/purchases').get(ProfileController.getPurchases);
     router.route('/payment-details').get(ProfileController.getPaimentDetails);
     // route update subscribtion
-    router.route('/subscribtion').put(ProfileController.updateSubscribtion);
+    router.route('/subscription').put(ProfileController.updateSubscribtion);
     // route cancel subscription and delete profile
-    router.route('/subscription/cancel').post(ProfileController.deleteProfile);
+    router.route('/subscription/cancel').delete(ProfileController.deleteProfile);
     // route update by stripe portal, redirect to link stripe portal
     router.route('/update-client').get(ProfileController.updateStripeCustomer);
     // route update password

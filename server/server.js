@@ -18,12 +18,12 @@ app.use(async (req, res, next) => {
 const AuthRouter = require ('./router/AuthRouter').router
 const AdminRouter = require('./router/AdminRouter').router
 const StoreRouter = require ('./router/StoreRouter').router
-// const ProfileRouter = require ('./router/ProfileRouter').router
+const ProfileRouter = require ('./router/ProfileRouter').router
 
 app.use(bodyParser.json())
 app.use('/api/auth', AuthRouter)
 app.use('/api/admin', AdminRouter)
-// app.use('/api/profile', ProfileRouter)
+app.use('/api/profile', ProfileRouter)
 app.use('/api/store', StoreRouter)
 prisma.$connect()
     .then(

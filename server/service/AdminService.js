@@ -3,16 +3,9 @@ const prisma = new PrismaClient()
 const _ = require('lodash');
 const fs = require('fs');
 require('dotenv').config();
-const { CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } = process.env;
 const stripe = require("stripe")(process.env.STRIPE_API_SECRET);
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../service/CloudinaryService');
 
-// Configure Cloudinary with your API credentials
-cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key: CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET,
-});
 class AdminService{
     /**
      * Sneaker fields param prisma

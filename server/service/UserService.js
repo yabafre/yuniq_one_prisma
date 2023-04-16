@@ -1,19 +1,29 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const _ = require('lodash');
-
+const fs = require('fs');
+const cloudinary = require('../service/CloudinaryService');
 
 class UserService{
 
     getUserProfile = async (userId) => {
-        const userProfile = await prisma.user.findUnique({
+        const userProfile = await prisma.user.findMany({
             where: {
                 id: userId
+            },
+            include: {
+                subscription: true,
+                purchases: true,
+                paymentDetails: true,
+                events: true,
+                _count: true
             }
         });
-
         const userProfileWithoutPassword = _.omit(userProfile, 'password');
-        return userProfileWithoutPassword;
+        if (userProfileWithoutPassword[0] === undefined) {
+            return false;
+        }
+        return userProfileWithoutPassword[0];
     };
 
     checkEmail = async (email) => {
@@ -39,7 +49,7 @@ class UserService{
     deleteUserProfile = async (userId) => {
         let message;
         try {
-            await prisma.user.delete({
+            await prisma.user.deleteMany({
                 where: {
                     id: userId
                 }
@@ -147,6 +157,24 @@ class UserService{
         } catch (error) {
             console.error(`Error updating user with ID ${userId}: ${error.message}`);
             throw error;
+        }
+    }
+
+    // Upload the image to Cloudinary
+    uploadImage = async (file) => {
+        try {
+            // Upload the image to Cloudinary
+            const result = await cloudinary.uploader.upload(file.path, {
+                folder: 'profile', // You can change the folder name to your preferred folder
+            });
+            // Delete the local file after uploading to Cloudinary
+            fs.unlinkSync(file.path);
+            // Return the image URL
+            console.log('Image uploaded to Cloudinary: ', result.secure_url)
+            return result.secure_url;
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            throw new Error('Error uploading image');
         }
     }
 }

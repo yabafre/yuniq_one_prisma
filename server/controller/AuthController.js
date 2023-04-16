@@ -13,8 +13,14 @@ const prisma = new PrismaClient()
 module.exports = {
     // récupération des champs du nouvel utilisateur
     async userAuth(req, res, next) {
-        const { firstname, lastname, email, phone, avatar, location, city, zip } = req.body;
+        const { firstname, lastname, email, phone, location, city, zip } = req.body;
+        let { avatar } = req.body;
+
         let { password } = req.body;
+        console.log(req.file)
+        if (req.file) {
+            avatar = await UserService.uploadImage(req.file);
+        }
 
         // vérification des champs
         const firstnameError = !firstname ? "firstname," : "";
@@ -88,6 +94,7 @@ module.exports = {
     async register(req, res, next) {
         const { firstname, lastname, email, password, phone, avatar, location, city, zip } = res;
         const { token } = res;
+        console.log(firstname, lastname, email, password, phone, avatar, location, city, zip)
         try {
             const user = await prisma.user.create({
                 data: {
@@ -146,6 +153,7 @@ module.exports = {
                 { expiresIn: 360000 },
                 (err, token) => {
                     if (err) throw err;
+                    console.log(token)
                     res.status(200).json({
                         token,
                         user: userFind,

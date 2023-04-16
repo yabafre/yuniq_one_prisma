@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"vite\" \"nodemon server/server.js\"",
+    "serve": "nodemon server/server.js\\",
     "build": "vite build",
     "preview": "vite preview"
   },
