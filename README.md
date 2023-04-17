@@ -1,4 +1,3 @@
-/**
 * yuniq-one
 *
 * 🎉 Introduction
@@ -206,4 +205,3 @@
 *
 * Ce projet est sous licence MIT.
 * Pour plus d'informations, veuillez consulter le fichier LICENSE.
-**/
