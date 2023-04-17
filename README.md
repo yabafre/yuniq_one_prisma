@@ -1,11 +1,11 @@
-* yuniq-one
+# yuniq-one
 *
 * 🎉 Introduction
 * ===============
 *
 * Le but de ce projet est de fournir un point de départ pour les développeurs qui cherchent à construire leur propre boutique en ligne ou à explorer ces technologies.
 *
-* ## 🔧 Features
+* ### 🔧 Features
 
 | ![Vue](https://img.shields.io/badge/-Vue-4FC08D?style=flat-square&logo=vue.js&logoColor=white) |  ![Vite](https://img.shields.io/badge/-Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | ![Node.js](https://img.shields.io/badge/-Node.js-339933?style=flat-square&logo=node.js&logoColor=white) | ![Express](https://img.shields.io/badge/-Express-000000?style=flat-square&logo=express&logoColor=white) | ![Prisma](https://img.shields.io/badge/-Prisma-0C344B?style=flat-square&logo=prisma&logoColor=white) | ![Multer](https://img.shields.io/badge/-Multer-1F8CEA?style=flat-square&logo=multer&logoColor=white) | ![Pina](https://img.shields.io/badge/-Pina-FFC107?style=flat-square&logo=pina&logoColor=white) | ![Stripe](https://img.shields.io/badge/-Stripe-008CDD?style=flat-square&logo=stripe&logoColor=white) |
 | --- | --- | --- | --- | --- | --- | --- | --- | 
@@ -201,7 +201,7 @@
 *
 * Si vous avez des suggestions ou des contributions à apporter, n'hésitez pas à créer une issue ou une pull request sur le repository GitHub du projet.
 *
-* ## Licence
+* ### Licence
 *
 * Ce projet est sous licence MIT.
 * Pour plus d'informations, veuillez consulter le fichier LICENSE.
