@@ -23,6 +23,8 @@ exports.router = (() => {
     // routes for Store checkout (payment) stripe
     router.route('/subscriptions/:id/subscribe').post(StoreFrontController.subscribe);
     router.route('/confirm_payment/:subscriptionId').get(StoreFrontController.confirm_payment);
+    // routes for Store update subscription
+    router.route('/subscriptions/:id/update').put(StoreFrontController.updateSubscription);
     // routes for Store checkout session (payment) stripe
     router.route('/checkout').post(StoreFrontController.checkout);
     router.route('/confirm_payment_checkout').get(StoreFrontController.confirm_payment_checkout);

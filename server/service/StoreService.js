@@ -87,6 +87,38 @@ class StoreService {
         return user;
 
     };
+    updateSubscription = async (subscriptionId, userId) => {
+        try {
+            // Récupération de l'utilisateur et de sa subscription actuelle
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                include: { subscription: true },
+            });
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Vérification que la nouvelle subscription existe
+            const subscription = await prisma.subscription.findUnique({
+                where: { id: subscriptionId },
+            });
+            if (!subscription) {
+                throw new Error('Subscription not found');
+            }
+
+            // Mise à jour de la subscription de l'utilisateur dans la base de données
+            const updatedUser = await prisma.user.update({
+                where: { id: userId },
+                data: { subscription: { connect: { id: subscriptionId } } },
+                include: { subscription: true },
+            });
+
+            return { user: updatedUser, subscription: subscription };
+        } catch (error) {
+            console.error(`Error updating user with ID ${userId}: ${error.message}`);
+            throw error;
+        }
+    }
     createPayment = async (userId,paymentDetails) => {
         try {
             // Find the user by their ID

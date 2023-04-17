@@ -123,6 +123,31 @@ class StoreFrontController {
         }
     };
 
+    updateSubscription = async (req, res) => {
+        try {
+            const userId = parseInt(req.params.userId);
+            const { subscriptionId } = req.body;
+
+            // Validation de la subscription
+            if (!subscriptionId) {
+                throw new Error('Subscription ID missing');
+            }
+
+            // Vérification que l'utilisateur a le droit de mettre à jour sa propre subscription
+            if (userId !== req.user.id) {
+                return res.status(403).json({ message: "Access denied. You can't update someone else's subscription" });
+            }
+
+            const updatedSubscription = await StoreService.updateSubscription(userId, subscriptionId);
+
+            const subscription =  await stripe.subscriptions.update(updatedSubscription.user.stripeCustomerId, { items: [{ price: updatedSubscription.subscription.stripePriceId }] });
+            res.status(200).json({ message: 'Subscription updated', data: subscription });
+        } catch (error) {
+            console.error(`Error updating subscription for user with ID ${req.user.id}: ${error.message}`);
+            res.status(500).json({ message: 'Error updating subscription' });
+        }
+    }
+
     addPurchase = async (req, res) => {
         try {
             const userId = req.user.id;
