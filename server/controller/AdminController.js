@@ -1,6 +1,6 @@
 const AdminService = require("../service/AdminService");
 require('dotenv').config();
-const stripe = require("stripe")(process.env.STRIPE_API_SECRET);
+const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
 
 class AdminController {
     addSneaker = async (req, res) => {

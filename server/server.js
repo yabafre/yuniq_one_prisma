@@ -1,6 +1,6 @@
 const express = require('express')
 require('dotenv').config()
-const port = process.env.PORT || 3000
+const port = process.env.VITE_APP_PORT || 3000
 const compression = require('compression')
 const cors = require('cors')
 const app = express()

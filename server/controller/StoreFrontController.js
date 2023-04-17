@@ -1,8 +1,8 @@
 const StoreService = require ("../service/StoreService");
 const UserService = require ("../service/UserService");
 require('dotenv').config();
-const {STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE} = process.env;
-const stripe = require("stripe")(STRIPE_API_SECRET);
+const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE} = process.env;
+const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 
 
 class StoreFrontController {

@@ -3,7 +3,7 @@ const prisma = new PrismaClient()
 const _ = require('lodash');
 const fs = require('fs');
 require('dotenv').config();
-const stripe = require("stripe")(process.env.STRIPE_API_SECRET);
+const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
 const cloudinary = require('../service/CloudinaryService');
 
 class AdminService{
