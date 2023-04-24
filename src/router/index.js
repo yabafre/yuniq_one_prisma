@@ -4,51 +4,56 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Account from '../views/Account.vue'
 import Logout from '../views/Logout.vue'
-import {useAuthStore} from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth'
+import Payement from "@/views/Payement.vue";
 
 const routes = [
   {
     path: '/',
+    name: 'home',
     component: HomeView
   },
   {
     path: '/login',
+    name: 'login',
     component: Login
   },
   {
     path: '/register',
+    name: 'register',
     component: Register
   },
   {
     path: '/account',
-    component: Account,
-    beforeEnter: (to, from, next) => {
-      if (useAuthStore().isAuthenticated) {
-        useAuthStore().fetchUser().then(() => {
-          next();
-        });
-      } else {
-        next('/login');
-      }
-    },
+    name: 'account',
+    component: Account
   },
   {
     path: '/logout',
-    component: Logout,
-    beforeEnter: (to, from, next) => {
-      useAuthStore().logout();
-      next('/login');
-    },
+    name: 'logout',
+    component: Logout
   },
   {
     path: '/payement',
-    component: () => import('../views/Payement.vue')
+    name: 'payement',
+    component: Payement
   }
 ];
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-})
+});
 
-export default router
+// Middleware to check if user is authenticated
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = useAuthStore().isAuthenticated;
+
+  if (isAuthenticated || to.name === 'home' || to.name === 'login' || to.name === 'register') {
+    next();
+  } else {
+    next('/login');
+  }
+});
+
+export default router;

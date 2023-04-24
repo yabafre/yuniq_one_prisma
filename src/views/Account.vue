@@ -1,7 +1,7 @@
 <template>
     <div>
         <h2>My Account</h2>
-        <div v-if="$auth.isAuthenticated">
+        <div v-if="user && $auth.isAuthenticated">
             <p>Name: {{ user.firstname }} {{ user.lastname }}</p>
             <img :src="user.avatar" alt="user image" />
             <p>Email: {{ user.email }}</p>
@@ -23,6 +23,10 @@ export default {
             return useAuthStore().user;
         },
         $auth: () => useAuthStore(),
+    },
+    async created() {
+        console.log('user :',useAuthStore().user)
+        await useAuthStore().fetchUser()
     },
 };
 </script>

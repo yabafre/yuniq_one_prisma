@@ -124,6 +124,7 @@ module.exports = {
     },
     // login session
     async login(req, res) {
+        console.log(req.body)
         const { email, password } = req.body;
         try {
             const userFind = await prisma.user.findUnique({

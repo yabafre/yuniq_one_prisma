@@ -7,6 +7,17 @@ const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
 const cloudinary = require('../service/CloudinaryService');
 
 class AdminService{
+
+    getAdmin = async (id) => {
+        const admin = await prisma.user.findUnique({
+            where: {
+                id: id
+            }
+        });
+        const adminData = _.pick(admin, ['id', 'email', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
+        return adminData;
+    }
+
     /**
      * Sneaker fields param prisma
      * @param {array} sneakerData

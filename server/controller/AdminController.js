@@ -3,6 +3,11 @@ require('dotenv').config();
 const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
 
 class AdminController {
+    getAdmin = async (req, res) => {
+        const id = req.user.id;
+        const admin = await AdminService.getAdmin(id);
+        res.status(200).json(admin);
+    }
     addSneaker = async (req, res) => {
         const {collectionId, sizes} = req.body;
         let parsedSizes = [];
@@ -95,6 +100,7 @@ class AdminController {
     };
     addCollection = async (req, res) => {
         // Upload the image to Cloudinary
+        console.log(req.file)
         if (req.file) {
             const image = await AdminService.uploadImage(req.file);
             req.body.image = image;

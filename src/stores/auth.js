@@ -17,6 +17,7 @@ export const useAuthStore = defineStore({
         async login(credentials) {
             const response = await api.login(credentials);
             this.token = response.data.token;
+            this.user = response.data.user;
             localStorage.setItem('token', this.token);
             this.isAuthenticated = true; // Mettre à jour le getter "isAuthenticated"
         },

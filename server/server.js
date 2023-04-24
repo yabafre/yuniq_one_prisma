@@ -1,12 +1,19 @@
 const express = require('express')
 require('dotenv').config()
 const port = process.env.VITE_APP_PORT || 3000
+const fs = require('fs')
 const compression = require('compression')
 const cors = require('cors')
 const app = express()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const bodyParser = require('body-parser')
+const https = require('https')
+
+const sslOptions = {
+    key: fs.readFileSync('./server/localhost-key.pem'),
+    cert: fs.readFileSync('./server/localhost.pem')
+}
 
 app.use(compression())
 app.use(cors())
@@ -21,6 +28,10 @@ const StoreRouter = require ('./router/StoreRouter').router
 const ProfileRouter = require ('./router/ProfileRouter').router
 
 app.use(bodyParser.json())
+// app.use('/api', (req, res, next) => {
+//     res.send('Hello to Yuniq store Api !')
+//     next();
+// })
 app.use('/api/auth', AuthRouter)
 app.use('/api/admin', AdminRouter)
 app.use('/api/profile', ProfileRouter)
@@ -29,6 +40,9 @@ prisma.$connect()
     .then(
         () => console.log('Prisma connected to database !'))
     .catch((err) => console.log(err))
-app.listen(port, () => {
-    console.log(`Server Express running at http://localhost:${port}`);
-});
+
+https.createServer(sslOptions, app).listen(port, () => {
+    console.log(`Server running on port ${port}`)
+}).on('error', (err) => {
+    console.log(err)
+})

@@ -3,6 +3,7 @@
         <h1>Paiement</h1>
         <div class="stripe-form">
             <form @submit.prevent="submit">
+                @csrf
                 <label for="name">Nom complet</label>
                 <input id="name" type="text" v-model="address.name" />
                 <label for="street">Adresse</label>
@@ -33,6 +34,7 @@ import { fetchCountries } from '@/services/countries';
 
 
 export default {
+    name: 'Payment',
     setup() {
         const stripe = inject('stripe');
         const cardElement = ref(null);

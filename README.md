@@ -16,22 +16,33 @@
 * ===================
 *
 * `npm install`
-*
-* Local Tunnel Https testing
-*
-* `npm install -g localtunnel`
+
 *
 * Compile and Hot-Reload for Development
 *
 * `npm run dev`
 *
-* Run your local tunnel https (in a separate terminal)
-*
-* `lt --port 5173 --subdomain store-yuniq`
-*
 * Compile and Minify for Production
 *
 * `npm run build`
+*
+*
+* 🌐 Load the server on https (SSL) or local tunnel (ngrok)
+* ========================================================
+*
+*
+* SSL HTTPS
+* - install [Mkcert ](https://github.com/FiloSottile/mkcert#installation) on your computer
+* - run `mkcert -install` to install the certificate authority
+* - run `mkcert localhost` to generate a certificate for localhost
+* - copy the generated files `localhost.pem` and `localhost-key.pem` in the `server/ssl` directory
+* - run `npm run dev` to start the server
+*
+* NGROK
+* - install [Ngrok](https://ngrok.com/download) on your computer
+* - run `ngrok http 3000` to create a tunnel to your local server
+* - copy the generated url (https://xxxxxx.ngrok.io) in the `.env` file
+*
 *
 * 🔑 Authentication
 * ======================

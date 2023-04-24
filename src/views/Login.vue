@@ -36,6 +36,7 @@ export default {
     methods: {
         async login() {
             console.log('Login method called');
+            console.log(this.form);
             await useAuthStore()
                 .login(this.form)
                 .then(() => {

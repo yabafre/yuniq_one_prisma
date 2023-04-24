@@ -19,6 +19,11 @@
 import { RouterLink, RouterView } from 'vue-router'
 import {useAuthStore} from '@/stores/auth'
 export default {
+    name: 'App',
+    components: {
+        RouterLink,
+        RouterView,
+    },
     computed: {
         $auth: () => useAuthStore(),
     },

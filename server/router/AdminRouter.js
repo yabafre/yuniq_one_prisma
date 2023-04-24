@@ -8,6 +8,7 @@ exports.router = (() => {
     // Utiliser le middleware d'authentification et le middleware d'administration pour toutes les routes
     router.use(authMiddleware);
     router.use(adminMiddleware);
+    router.route('/').get(AdminController.getAdmin);
     router.route('/sneaker').post(upload.fields([
         { name: 'image_url', maxCount: 1 },
         { name: 'image_url2', maxCount: 1 },
