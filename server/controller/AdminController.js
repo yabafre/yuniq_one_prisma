@@ -8,6 +8,14 @@ class AdminController {
         const admin = await AdminService.getAdmin(id);
         res.status(200).json(admin);
     }
+    getAllUsersWithSubscriptions = async (req, res) => {
+        const users = await AdminService.getAllUsersWithSubscriptions();
+        res.status(200).json({message: 'Users retrieved successfully', data: users});
+    }
+    getSneakers = async (req, res) => {
+        const sneakers = await AdminService.getSneakers();
+        res.status(200).json({message: 'Sneakers retrieved successfully', data: sneakers});
+    }
     addSneaker = async (req, res) => {
         const {collectionId, sizes} = req.body;
         let parsedSizes = [];
@@ -38,7 +46,7 @@ class AdminController {
             }, {});
         }
         const sneaker = await AdminService.addSneaker(req.body, collectionId, images, parsedSizes);
-        res.status(201).json(sneaker);
+        res.status(201).json({message: 'Sneaker added successfully', data: sneaker});
     };
     updateSneaker = async (req, res) => {
         const sneakerId = parseInt(req.params.id, 10);
@@ -73,12 +81,12 @@ class AdminController {
         }
 
         const sneaker = await AdminService.updateSneaker(sneakerId, req.body, images, parsedSizes);
-        res.status(200).json(sneaker);
+        res.status(200).json({message: 'Sneaker updated successfully', data: sneaker});
     };
     deleteSneaker = async (req, res) => {
         const sneakerId = parseInt(req.params.id, 10);
         const sneaker = await AdminService.deleteSneaker(sneakerId);
-        res.status(200).json(sneaker);
+        res.status(200).json({message: 'Sneaker deleted successfully', data: sneaker});
     };
     addSizeToSneaker = async (req, res) => {
         const sneakerId = parseInt(req.params.id, 10);
@@ -96,7 +104,7 @@ class AdminController {
         const sneakerId = parseInt(req.params.id, 10);
         const sizeId = parseInt(req.params.sizeId, 10);
         const size = await AdminService.deleteSizeFromSneaker(sneakerId, sizeId);
-        res.status(200).json(size);
+        res.status(200).json({message: 'Size deleted successfully', data: size});
     };
     addCollection = async (req, res) => {
         // Upload the image to Cloudinary
@@ -106,7 +114,7 @@ class AdminController {
             req.body.image = image;
         }
         const collection = await AdminService.addCollection(req.body);
-        res.status(201).json(collection);
+        res.status(201).json({message: "Collection added successfully", data: collection});
     };
     updateCollection = async (req, res) => {
         const collectionId = parseInt(req.params.id, 10);
@@ -115,13 +123,21 @@ class AdminController {
             const image = await AdminService.uploadImage(req.file);
             req.body.image = image;
         }
+        if (req.body.status) {
+            req.body.status = req.body.status === 'true';
+        }
         const collection = await AdminService.updateCollection(collectionId, req.body);
-        res.status(201).json(collection);
+        res.status(201).json({message: "Collection updated successfully", data: collection});
     };
+
     deleteCollection = async (req, res) => {
         const collectionId = req.params.id;
         const collection = await AdminService.deleteCollection(collectionId);
-        res.status(200).json(collection);
+        res.status(200).json({message: "Collection deleted successfully", data: collection});
+    }
+    getSubscriptions = async (req, res) => {
+        const subscriptions = await AdminService.getSubscriptions();
+        res.status(200).json({message: 'Subscriptions retrieved successfully', data: subscriptions});
     }
     addSubscription = async (req, res) => {
         // Upload the image to Cloudinary
@@ -148,7 +164,7 @@ class AdminController {
         });
         // Save the Stripe product ID and price ID in the subscription
         const save = await  AdminService.updateSubscription(subscription.id, {stripeProductId: product.id, stripePriceId: price.id});
-        res.status(201).json(save);
+        res.status(201).json({message: "Subscription added successfully", data: save});
     };
     updateSubscription = async (req, res) => {
         const subscriptionId = parseInt(req.params.subscriptionId, 10);
@@ -204,12 +220,16 @@ class AdminController {
         // Save the Stripe product ID and price ID in the subscription
         const save = await  AdminService.updateSubscription(subscription.id, {stripeProductId: product.id, stripePriceId: newPrice.data[0].id});
         console.log(newPrice)
-        res.status(201).json(newPrice);
+        res.status(201).json({message: "Subscription updated successfully", data: save});
     }
     deleteSubscription = async (req, res) => {
         const subscriptionId = req.params.subscriptionId;
         const subscription = await AdminService.deleteSubscription(subscriptionId);
-        res.status(200).json(subscription);
+        res.status(200).json({message: "Subscription deleted successfully", data: subscription});
+    }
+    getSubscriptionsPaid = async (req, res) => {
+        const subscriptions = await AdminService.getSubscriptionsPaid();
+        res.status(200).json({message: 'Subscriptions retrieved successfully', data: subscriptions});
     }
     addPromoCode = async (req, res) => {
         const {duration, id, percent_off, max_redemptions, redeem_by} = req.body;
@@ -231,7 +251,7 @@ class AdminController {
     }
     deleteImage = async (req, res) => {
         const image = await AdminService.deleteImage();
-        res.status(201).json(image);
+        res.status(201).json({message: "Image deleted successfully", data: image});
     }
 }
 

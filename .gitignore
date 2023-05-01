@@ -28,5 +28,8 @@ coverage
 *.sln
 *.sw?
 
+# prisma generated files
+prisma/migrations/
+
 # localhost ssl certs
 server/*.pem
