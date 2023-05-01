@@ -9,6 +9,8 @@ exports.router = (() => {
     router.use(authMiddleware);
     router.use(adminMiddleware);
     router.route('/').get(AdminController.getAdmin);
+    router.route('/users/subs').get(AdminController.getAllUsersWithSubscriptions);
+    router.route('/sneaker').get(AdminController.getSneakers);
     router.route('/sneaker').post(upload.fields([
         { name: 'image_url', maxCount: 1 },
         { name: 'image_url2', maxCount: 1 },
@@ -25,9 +27,11 @@ exports.router = (() => {
     router.route('/collection').post(upload.single('image'), AdminController.addCollection);
     router.route('/collection/:id').put(upload.single('image'), AdminController.updateCollection);
     router.route('/collection/:id').delete(AdminController.deleteCollection);
+    router.route('/subscription').get(AdminController.getSubscriptions);
     router.route('/subscription').post(upload.single('image'),AdminController.addSubscription);
     router.route('/subscription/:subscriptionId').put(upload.single('image'),AdminController.updateSubscription);
     router.route('/subscription/:subscriptionId').delete(AdminController.deleteSubscription);
+    router.route('/subscription/paid').get(AdminController.getSubscriptionsPaid);
     router.route('/promo-code').post(AdminController.addPromoCode);
     router.route('/promo-code/:id').delete(AdminController.deletePromoCode);
     router.route('/reload-image').get(AdminController.deleteImage);

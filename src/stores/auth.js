@@ -40,7 +40,7 @@ export const useAuthStore = defineStore({
         async createPayment(paymentData) {
             try {
                 const token = localStorage.getItem('token');
-                const response = await api.postPayment(token, { stripeToken: paymentData, stripePriceId: 'price_1MuCqOEsNvEaR3fb9eGT016k' });
+                const response = await api.postPayment(token, { stripeToken: paymentData, stripePriceId: 'price_1N2hbrEsNvEaR3fbVHx7c7Pj' });
                 this.response = response;
                 console.log('response payment : ', response);
             } catch (error) {

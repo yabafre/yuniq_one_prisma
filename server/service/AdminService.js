@@ -17,7 +17,33 @@ class AdminService{
         const adminData = _.pick(admin, ['id', 'email', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
         return adminData;
     }
-
+    getAllUsersWithSubscriptions = async () => {
+        // get all users we are subscription
+        const users = await prisma.user.findMany({
+            where: {
+                subscriptionId: {
+                    not: null
+                }
+            },
+            include: {
+                subscription: true
+            }
+        } );
+        return users;
+    }
+    getSneakers = async () => {
+        const sneakers = await prisma.sneaker.findMany({
+            include: {
+                sizeSneaker: {
+                    include: {
+                        size: true,
+                    },
+                },
+                relatedCollections: true,
+            },
+        });
+        return sneakers;
+    }
     /**
      * Sneaker fields param prisma
      * @param {array} sneakerData
@@ -276,6 +302,7 @@ class AdminService{
                 name: collectionData.name,
                 description: collectionData.description,
                 image: collectionData.image,
+                status: collectionData.status,
             }
         });
         return collection;
@@ -290,6 +317,9 @@ class AdminService{
         }
         if (collectionData.image !== undefined) {
             updateData.image = collectionData.image;
+        }
+        if (collectionData.status !== undefined) {
+            updateData.status = collectionData.status;
         }
         const collection = await prisma.collection.update({
             where: {
@@ -316,32 +346,80 @@ class AdminService{
             return 'Collection not found';
         }
     }
+    getSubscriptions = async () => {
+        const subscriptions = await prisma.subscription.findMany({
+            include: {
+                relatedCollections: true,
+                users: true,
+            }
+        } );
+        return subscriptions;
+    };
     addSubscription = async (subscriptionData) => {
+        const data = {
+            name: subscriptionData.name,
+            description: subscriptionData.description,
+            price: parseInt(subscriptionData.price),
+            image: subscriptionData.image,
+            interval: subscriptionData.interval,
+            intervalCount: parseInt(subscriptionData.intervalCount),
+        };
+
+        if (subscriptionData.collection !== undefined && !isNaN(subscriptionData.collection)) {
+            data.relatedCollections = {
+                connect: {
+                    id: parseInt(subscriptionData.collection),
+                }
+            };
+        }
+
         const subscription = await prisma.subscription.create({
-            data: {
-                name: subscriptionData.name,
-                description: subscriptionData.description,
-                price: parseInt(subscriptionData.price),
-                image: subscriptionData.image,
-                interval: subscriptionData.interval,
-                intervalCount: parseInt(subscriptionData.intervalCount),
-                relatedCollections: {
-                    connect: {
-                        id: parseInt(subscriptionData.collection),
-                    }
+            data,
+        });
+
+        return subscription;
+    }
+    updateSubscription = async (subscriptionId, subscriptionData) => {
+        console.log(subscriptionData)
+        const updateData = {};
+        if (subscriptionData.name !== undefined) {
+            updateData.name = subscriptionData.name;
+        }
+        if (subscriptionData.description !== undefined) {
+            updateData.description = subscriptionData.description;
+        }
+        if (subscriptionData.price !== undefined) {
+            updateData.price = parseInt(subscriptionData.price);
+        }
+        if (subscriptionData.image !== undefined) {
+            updateData.image = subscriptionData.image;
+        }
+        if (subscriptionData.interval !== undefined) {
+            updateData.interval = subscriptionData.interval;
+        }
+        if (subscriptionData.intervalCount !== undefined) {
+            updateData.intervalCount = parseInt(subscriptionData.intervalCount);
+        }
+        if (subscriptionData.collection !== undefined && subscriptionData.collection !== '' && subscriptionData.collection !== null && !isNaN(subscriptionData.collection)) {
+            updateData.relatedCollections = {
+                connect: {
+                    id: parseInt(subscriptionData.collection),
                 }
             }
-        });
-        return subscription;
-    };
-    updateSubscription = async (subscriptionId, subscriptionData) => {
+        }
+        if (subscriptionData.stripeProductId !== undefined) {
+            updateData.stripeProductId = subscriptionData.stripeProductId;
+        }
+        if (subscriptionData.stripePriceId !== undefined) {
+            updateData.stripePriceId = subscriptionData.stripePriceId;
+        }
         const subscription = await prisma.subscription.update({
             where: {
                 id: parseInt(subscriptionId),
             },
-            data: subscriptionData,
+            data: updateData,
         });
-        console.log('update : ',subscription);
+        console.log('update : ', subscription);
         return subscription;
     }
     deleteSubscription = async (subscriptionId) => {
@@ -377,6 +455,18 @@ class AdminService{
             return `Delete subscription error: ${err}`;
         }
     };
+    getSubscriptionsPaid = async () => {
+        const subscriptions = await prisma.paymentDetail.findMany(
+            {
+                select: {
+                    subscriptionId: true,
+                    amount: true,
+                    date: true,
+                }
+            }
+        );
+        return subscriptions;
+    }
     addPromoCode = async (promoCodeData) => {
         const promoCode = await prisma.codePromo.create({
             data: {

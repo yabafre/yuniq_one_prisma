@@ -62,6 +62,7 @@ model Collection {
   name          String
   image         String         @default("https://www.placeholder.com/200/300")
   description   String
+  status        Boolean        @default(true)
   sneakers      Sneaker[]
   subscriptions Subscription[]
   createdAt     DateTime       @default(now())

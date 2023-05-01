@@ -29,7 +29,7 @@ exports.router = (() => {
     router.route('/checkout').post(StoreFrontController.checkout);
     router.route('/confirm_payment_checkout').get(StoreFrontController.confirm_payment_checkout);
     // routes for Store purchases
-    router.use(checkSubscription);
+    // router.use(checkSubscription);
     router.route('/purchase/:sneakerId').get(StoreFrontController.addPurchase);
     // // routes for Store events
     // router.route('/events').get(StoreFrontController.getEvents);

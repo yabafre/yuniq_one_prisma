@@ -41,8 +41,33 @@ prisma.$connect()
         () => console.log('Prisma connected to database !'))
     .catch((err) => console.log(err))
 
-https.createServer(sslOptions, app).listen(port, () => {
-    console.log(`Server running on port ${port}`)
-}).on('error', (err) => {
-    console.log(err)
-})
+// https.createServer(sslOptions, app).listen(port, () => {
+//     console.log(`Server running on port ${port}`)
+// }).on('error', (err) => {
+//     console.log(err)
+// })
+
+
+function startServer() {
+    const server = app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
+    });
+
+    server.on("error", (err) => {
+        server.close(() => {
+            handleError(err);
+        });
+    });
+}
+
+
+function handleError(err) {
+    console.log(err);
+    console.log("Restarting server in 3 seconds...");
+    setTimeout(() => {
+        startServer();
+    }, 3000);
+}
+
+
+startServer();

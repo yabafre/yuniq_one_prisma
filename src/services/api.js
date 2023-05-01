@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = `https://localhost:${import.meta.env.VITE_APP_PORT}/api`;
+const API_BASE_URL = `http://localhost:${import.meta.env.VITE_APP_PORT}/api`;
 
 const authApi = axios.create({
     baseURL: `${API_BASE_URL}/auth`,
@@ -44,7 +44,7 @@ export default {
     },
     async postPayment(token, paymentData) {
         try {
-            const response = await storeApi.post('/subscriptions/2/subscribe',
+            const response = await storeApi.post('/subscriptions/5/subscribe',
                 paymentData
                 , {
                 headers: { Authorization: `Bearer ${token}` },

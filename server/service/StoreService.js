@@ -15,7 +15,17 @@ class StoreService {
         return userWithoutPassword[0];
     }
     getCollection = async () => {
-        const collections = await prisma.collection.findMany();
+        const collections = await prisma.collection.findMany(
+            {
+                include: {
+                    _count: {
+                        select: {
+                            sneakers: true,
+                        }
+                    }
+                }
+            }
+        );
         return collections;
     };
     getCollectionById = async (id) => {
