@@ -231,6 +231,10 @@ class AdminController {
         const subscriptions = await AdminService.getSubscriptionsPaid();
         res.status(200).json({message: 'Subscriptions retrieved successfully', data: subscriptions});
     }
+    getPromoCodes = async (req, res) => {
+        const coupons = await AdminService.getPromoCodes();
+        res.status(200).json({message: 'Promo codes retrieved successfully', data: coupons});
+    }
     addPromoCode = async (req, res) => {
         const {duration, id, percent_off, max_redemptions, redeem_by} = req.body;
         const redeem = Math.floor(Date.now() / 1000) + parseInt(redeem_by) * 24 * 60 * 60; // timestamp Unix dans une semaine

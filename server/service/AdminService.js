@@ -467,6 +467,10 @@ class AdminService{
         );
         return subscriptions;
     }
+    getPromoCodes = async () => {
+        const promoCodes = await prisma.codePromo.findMany();
+        return promoCodes;
+    }
     addPromoCode = async (promoCodeData) => {
         const promoCode = await prisma.codePromo.create({
             data: {
