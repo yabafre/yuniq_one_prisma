@@ -143,37 +143,85 @@ class AdminSubscriptionController {
     deleteSubscription = async (req, res) => {
         try {
             const subscriptionId = req.params.subscriptionId;
+            if (!subscriptionId) {
+                throw new Error("Subscription ID is required");
+            }
             const subscription = await AdminService.deleteSubscription(subscriptionId);
-            res.status(200).json({message: "Subscription deleted successfully", data: subscription});
+            if (!subscription) {
+                throw new Error("Subscription could not be deleted");
+            } else {
+                return res.status(200).json({message: "Subscription deleted successfully", data: subscription});
+            }
         } catch (error) {
             return res.status(500).json({message: error.message});
         }
     }
     getSubscriptionsPaid = async (req, res) => {
-        const subscriptions = await AdminService.getSubscriptionsPaid();
-        res.status(200).json({message: 'Subscriptions retrieved successfully', data: subscriptions});
+        try {
+            const subscriptions = await AdminService.getSubscriptionsPaid();
+            if (!subscriptions) {
+                throw new Error("Subscriptions could not be retrieved");
+            } else {
+                return res.status(200).json({message: "Subscriptions retrieved successfully", data: subscriptions});
+            }
+        } catch (error) {
+            return res.status(500).json({message: error.message});
+        }
     }
     getPromoCodes = async (req, res) => {
-        const coupons = await AdminService.getPromoCodes();
-        res.status(200).json({message: 'Promo codes retrieved successfully', data: coupons});
+        try {
+            const coupons = await AdminService.getPromoCodes();
+            if (!coupons) {
+                throw new Error("Promo codes could not be retrieved");
+            } else {
+                return res.status(200).json({message: "Promo codes retrieved successfully", data: coupons});
+            }
+        } catch (error) {
+            return res.status(500).json({message: error.message});
+        }
     }
     addPromoCode = async (req, res) => {
-        const {duration, id, percent_off, max_redemptions, redeem_by} = req.body;
-        const redeem = Math.floor(Date.now() / 1000) + parseInt(redeem_by) * 24 * 60 * 60; // timestamp Unix dans une semaine
-        const coupon = await stripe.coupons.create({
-            duration: duration, // "once", "repeating", "forever"
-            id: id, // "promo-code"
-            percent_off: parseInt(percent_off), // 10
-            max_redemptions: parseInt(max_redemptions), // 1
-            redeem_by: redeem, // 1620000000
-        });
-        const response = await AdminService.addPromoCode(coupon);
-        res.status(201).json({message: "Promo code added successfully", data: response});
+        try {
+            const {duration, id, percent_off, max_redemptions, redeem_by} = req.body;
+            if (!duration || !id || !percent_off || !max_redemptions || !redeem_by) {
+                throw new Error("All fields are required");
+            }
+            const redeem = Math.floor(Date.now() / 1000) + parseInt(redeem_by) * 24 * 60 * 60; // timestamp Unix dans une semaine
+            const coupon = await stripe.coupons.create({
+                duration: duration, // "once", "repeating", "forever"
+                id: id, // "promo-code"
+                percent_off: parseInt(percent_off), // 10
+                max_redemptions: parseInt(max_redemptions), // 1
+                redeem_by: redeem, // 1620000000
+            });
+            if (!coupon) {
+                throw new Error("Promo code could not be created");
+            }
+            const response = await AdminService.addPromoCode(coupon);
+            if (!response) {
+                throw new Error("Promo code could not be saved");
+            } else {
+                return res.status(201).json({message: "Promo code added successfully", data: response});
+            }
+        } catch (error) {
+            return res.status(500).json({message: error.message});
+        }
     }
     deletePromoCode = async (req, res) => {
-        const idCoupon = req.params.id;
-        const coupon = await AdminService.deletePromoCode(idCoupon);
-        res.status(201).json(coupon);
+        try {
+            const idCoupon = req.params.id;
+            if (!idCoupon) {
+                throw new Error("Promo code ID is required");
+            }
+            const coupon = await AdminService.deletePromoCode(idCoupon);
+            if (!coupon) {
+                throw new Error("Promo code could not be deleted");
+            } else {
+                return res.status(200).json({message: "Promo code deleted successfully", data: coupon});
+            }
+        } catch (error) {
+            return res.status(500).json({message: error.message});
+        }
 
     }
 }

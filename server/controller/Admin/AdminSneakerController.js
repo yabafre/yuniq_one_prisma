@@ -59,7 +59,11 @@ class AdminSneakerController {
                 throw new Error('Price is required');
             }
             const sneaker = await AdminService.addSneaker(req.body, collectionId, images, parsedSizes);
-            res.status(201).json({message: 'Sneaker added successfully', data: sneaker});
+            if (sneaker) {
+                return res.status(200).json({message: 'Sneaker added successfully', data: sneaker});
+            } else {
+                throw new Error('Failed to add sneaker');
+            }
         } catch (error) {
             return res.status(500).json({message: error.message});
         }

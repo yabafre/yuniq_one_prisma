@@ -14,77 +14,73 @@ const prisma = new PrismaClient()
 module.exports = {
     // récupération des champs du nouvel utilisateur
     async userAuth(req, res, next) {
-        const { firstname, lastname, email, phone, location, city, zip } = req.body;
-        let { avatar } = req.body;
+        try {
+            const { firstname, lastname, email, phone, location, city, zip } = req.body;
+            let { avatar } = req.body;
 
-        let { password } = req.body;
-        console.log(req.file)
-        if (req.file) {
-            avatar = await UserService.uploadImage(req.file);
+            let { password } = req.body;
+            console.log(req.file)
+            if (req.file) {
+                avatar = await UserService.uploadImage(req.file);
+            }
+
+            // vérification des champs
+            const firstnameError = !firstname ? "firstname," : "";
+            const lastnameError = !lastname ? "lastname," : "";
+            const emailError = !email ? "email," : "";
+            const passwordError = !password ? "password," : "";
+            const phoneError = !phone ? "phone," : "";
+            const locationError = !location ? "location," : "";
+            const cityError = !city ? "city," : "";
+            const zipError = !zip ? "zip," : "";
+
+            if (
+                !firstname ||
+                !lastname ||
+                !email ||
+                !password ||
+                !phone ||
+                !location ||
+                !city ||
+                !zip
+            ) {
+                return throw new Error( `Les champs ${firstnameError} ${lastnameError} ${emailError} ${passwordError} ${phoneError} ${locationError} ${cityError} ${zipError} sont obligatoires`);
+            }
+            // regex pour l'email et le mot de passe
+            const regexEmail = /^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$/;
+            const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
+
+            if (!regexEmail.test(email)) {
+                return throw new Error("L'email n'est pas valide");
+            }
+            if (!regexPassword.test(password)) {
+                return throw new Error("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial");
+            }
+
+            // vérification email déjà utilisé
+            const uniqEmail = await UserService.checkEmail(email);
+            if (!uniqEmail) {
+                return throw new Error("L'email est déjà utilisé");
+            }
+
+
+            // cryptage du mot de passe
+            const salt = bcrypt.genSaltSync(10);
+            password = bcrypt.hashSync(password, salt);
+
+            res.firstname = firstname;
+            res.lastname = lastname;
+            res.email = email;
+            res.password = password;
+            res.phone = phone;
+            res.location = location;
+            res.city = city;
+            res.zip = zip;
+            res.avatar = avatar ? avatar : null;
+            next();
+        } catch (error) {
+            return res.status(500).json({ message: error.message });
         }
-
-        // vérification des champs
-        const firstnameError = !firstname ? "firstname," : "";
-        const lastnameError = !lastname ? "lastname," : "";
-        const emailError = !email ? "email," : "";
-        const passwordError = !password ? "password," : "";
-        const phoneError = !phone ? "phone," : "";
-        const locationError = !location ? "location," : "";
-        const cityError = !city ? "city," : "";
-        const zipError = !zip ? "zip," : "";
-
-        if (
-            !firstname ||
-            !lastname ||
-            !email ||
-            !password ||
-            !phone ||
-            !location ||
-            !city ||
-            !zip
-        ) {
-            return res.status(400).json({
-                message: `Il manque des informations : ${firstnameError} ${lastnameError} ${emailError} ${passwordError} ${phoneError} ${locationError} ${cityError} ${zipError}`,
-            });
-        }
-        // regex pour l'email et le mot de passe
-        const regexEmail = /^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$/;
-        const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
-
-        if (!regexEmail.test(email)) {
-            return res.status(400).json({
-                message: "L'email n'est pas valide",
-            });
-        }
-        if (!regexPassword.test(password)) {
-            return res.status(400).json({
-                message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",
-            });
-        }
-
-        // vérification email déjà utilisé
-        const uniqEmail = await UserService.checkEmail(email);
-        if (!uniqEmail) {
-            return res.status(400).json({
-                message: "L'email est déjà utilisé",
-            });
-        }
-
-
-        // cryptage du mot de passe
-        const salt = bcrypt.genSaltSync(10);
-        password = bcrypt.hashSync(password, salt);
-
-        res.firstname = firstname;
-        res.lastname = lastname;
-        res.email = email;
-        res.password = password;
-        res.phone = phone;
-        res.location = location;
-        res.city = city;
-        res.zip = zip;
-        res.avatar = avatar ? avatar : null;
-        next();
     },
     // création du Token
     createToken(req, res, next) {
@@ -111,16 +107,14 @@ module.exports = {
                     token: token,
                 }
             });
-            res.status(201).json({
-                message: "Utilisateur créé",
-                user,
-            });
-            next();
+            if (!user) {
+                return throw new Error ('Utilisateur n\'a  pas être créé');
+            } else {
+                res.status(201).json({ message: "Utilisateur créé" });
+                next();
+            }
         } catch (error) {
-            res.status(400).json({
-                message: "Erreur lors de la création de l'utilisateur",
-                error,
-            });
+            res.status(500).json({message: error.message});
         }
     },
     // login session
@@ -134,25 +128,18 @@ module.exports = {
                 }
             });
             if (!userFind) {
-                return res.status(400).json({
-                    message: "Utilisateur non trouvé",
-                });
+                return throw new Error ('Utilisateur non trouvé')
             }
             const isMatch = await bcrypt.compare(password, userFind.password);
             if (!isMatch) {
-                return res.status(400).json({
-                    message: "Mot de passe incorrect",
-                });
+                return throw new Error('Mot de passe incorrect')
             }
             const payload = {
                 user: {
                     id: userFind.id,
                 },
             };
-            JWT.sign(
-                payload,
-                SECRET_KEY,
-                { expiresIn: 360000 },
+            JWT.sign(payload, SECRET_KEY, { expiresIn: 360000 },
                 (err, token) => {
                     if (err) throw err;
                     console.log(token)
@@ -163,10 +150,7 @@ module.exports = {
                 }
             );
         } catch (error) {
-            res.status(400).json({
-                message: "Erreur lors de la connexion de l'utilisateur",
-                error,
-            });
+            res.status(500).json({message: error.message});
         }
     },
     // logout session by deleting token jwt in localstorage

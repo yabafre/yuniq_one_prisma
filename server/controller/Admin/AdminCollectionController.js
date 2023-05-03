@@ -20,29 +20,36 @@ class AdminCollectionController {
                 throw new Error("Description is required");
             }
             const collection = await AdminService.addCollection(req.body);
-            res.status(201).json({message: "Collection added successfully", data: collection});
-
+            if (!collection) throw new Error("Collection not created");
+            return res.status(200).json({message: "Collection created successfully", data: collection});
         } catch (error) {
             return res.status(500).json({message: error.message});
         }
     };
     static updateCollection = async (req, res) => {
-        const collectionId = parseInt(req.params.id, 10);
-        // Upload the image to Cloudinary
-        if (req.file) {
-            req.body.image = await AdminService.uploadImage(req.file);
+        try {
+            const collectionId = parseInt(req.params.id, 10);
+            // Upload the image to Cloudinary
+            if (req.file) {
+                req.body.image = await AdminService.uploadImage(req.file);
+            }
+            if (req.body.status) {
+                req.body.status = req.body.status === 'true';
+            }
+            const collection = await AdminService.updateCollection(collectionId, req.body);
+            if (!collection) throw new Error("Collection not found");
+            return res.status(200).json({message: "Collection updated successfully", data: collection});
+        } catch (error) {
+            return res.status(500).json({message: error.message});
         }
-        if (req.body.status) {
-            req.body.status = req.body.status === 'true';
-        }
-        const collection = await AdminService.updateCollection(collectionId, req.body);
-        res.status(201).json({message: "Collection updated successfully", data: collection});
     };
     static deleteCollection = async (req, res) => {
         try {
             const collectionId = req.params.id;
+            if (!collectionId) throw new Error("Collection id is required");
             const collection = await AdminService.deleteCollection(collectionId);
-            res.status(200).json({message: collection});
+            if (!collection) throw new Error("Collection not found");
+            return res.status(200).json({message: "Collection deleted successfully", data: collection});
         } catch (error) {
             return res.status(500).json({message: error.message});
         }
