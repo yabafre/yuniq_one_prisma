@@ -13,7 +13,7 @@ exports.router = (() => {
     router.route('/subscription').get(ProfileController.getSubscriptions);
     router.route('/purchases').get(ProfileController.getPurchases);
     router.route('/payment-details').get(ProfileController.getPaimentDetails);
-    // route update subscribtion
+    // route update subscription
     router.route('/subscription').put(ProfileController.updateSubscribtion);
     // route cancel subscription and delete profile
     router.route('/subscription/cancel').delete(ProfileController.deleteProfile);
@@ -22,7 +22,7 @@ exports.router = (() => {
     // route update password
     router.route('/update-password').put(ProfileController.updatePassword);
     // route webhooks stripe
-    router.route('/webhook').get(ProfileController.webhookPaymentStatus);
+    // router.route('/webhook').get(ProfileController.webhookPaymentStatus);
 
     return router
 })();

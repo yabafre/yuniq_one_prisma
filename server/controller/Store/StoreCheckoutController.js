@@ -5,7 +5,6 @@ const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE} = process.env;
 const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 
 class StoreCheckoutController {
-
     // subscribe by card of user and create a subscription to stripe
     static subscribe = async (req, res) => {
         const subscriptionId = parseInt(req.params.id);
@@ -57,12 +56,12 @@ class StoreCheckoutController {
             });
             console.log(subscriptionStripe.latest_invoice.payment_intent.status)
             if (subscriptionStripe.latest_invoice.payment_intent.status === "succeeded") {
-                res.status(200).json({status: "succeeded", redirect: `http://localhost:3000/api/store/confirm_payment/${subscriptionStripe.id}`, data: subscriptionStripe});
+               return res.status(200).json({status: "succeeded", redirect: `http://localhost:3000/api/store/confirm_payment/${subscriptionStripe.id}`, data: subscriptionStripe});
             } else {
-                res.status(401).json({status: "failed", data: subscriptionStripe.latest_invoice.payment_intent});
+              return  res.status(401).json({status: "failed", data: subscriptionStripe.latest_invoice.payment_intent});
             }
         } catch (error) {
-            res.status(400).json({ message: error.message, data: error });
+           return  res.status(400).json({ message: error.message, data: error });
         }
     }
     static confirm_payment = async (req, res) => {
@@ -91,30 +90,6 @@ class StoreCheckoutController {
             res.status(400).json({message: "Payment failed", data: payment_intent});
         }
     };
-    static updateSubscription = async (req, res) => {
-        try {
-            const userId = parseInt(req.params.userId);
-            const { subscriptionId } = req.body;
-
-            // Validation de la subscription
-            if (!subscriptionId) {
-                throw new Error('Subscription ID missing');
-            }
-
-            // Vérification que l'utilisateur a le droit de mettre à jour sa propre subscription
-            if (userId !== req.user.id) {
-                return res.status(403).json({ message: "Access denied. You can't update someone else's subscription" });
-            }
-
-            const updatedSubscription = await StoreService.updateSubscription(userId, subscriptionId);
-
-            const subscription =  await stripe.subscriptions.update(updatedSubscription.user.stripeCustomerId, { items: [{ price: updatedSubscription.subscription.stripePriceId }] });
-            res.status(200).json({ message: 'Subscription updated', data: subscription });
-        } catch (error) {
-            console.error(`Error updating subscription for user with ID ${req.user.id}: ${error.message}`);
-            res.status(500).json({ message: 'Error updating subscription' });
-        }
-    }
     static addPurchase = async (req, res) => {
         try {
             const userId = req.user.id;
@@ -123,13 +98,17 @@ class StoreCheckoutController {
                 throw new Error('Sneaker ID missing');
             }
             if (userId !== req.user.id) {
-                return res.status(403).json({ message: "Access denied. You can't add a purchase to someone else's account" });
+                return throw new Error("Access denied. You can't add a purchase to someone else's account" );
             }
             const purchase = await StoreService.createPurchase(userId, sneakerId);
-            res.status(201).json({ message: 'Purchase successful', purchase });
+            if (!purchase) {
+                return throw new Error('Error creating purchase');
+            } else {
+                return res.status(200).json({ message: 'Purchase created', data: purchase });
+            }
         } catch (error) {
             console.error(`Error making purchase for user with ID ${req.user.id}: ${error.message}`);
-            res.status(500).json({ message: 'Error making purchase' });
+            return res.status(500).json({ message: error.message });
         }
     }
     // create a checkout session to stripe

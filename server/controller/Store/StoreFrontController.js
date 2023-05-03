@@ -7,47 +7,87 @@ const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 
 class StoreFrontController {
     home = async (req, res) => {
-        const user = await StoreService.getUser(req.user.id);
-        res.json({message: ` Welcome to store  ${user.firstname} !`, data: user});
+        try {
+            const user = await StoreService.getUser(req.user.id);
+            if (!user) {
+                return throw new Error("User not found");
+            } else {
+               return res.status(200).json({message: ` Welcome to store  ${user.firstname} !`, data: user});
+            }
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
     }
     getCollection = async (req, res) => {
-        const collections = await StoreService.getCollection();
-        if (collections.length === 0) {
-            return res.status(400).json({ message: "Nothing collections"});
+        try {
+            const collections = await StoreService.getCollection();
+            if (collections.length === 0) {
+                return throw new Error("Nothing collections");
+            }
+            return res.status(200).json({message: "Collections found", data: collections});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
         }
-        res.status(200).json({message: "Collections found", data: collections});
     };
     getCollectionById = async (req, res) => {
-        const collectionId = req.params.id;
-        const collection = await StoreService.getCollectionById(collectionId);
-        if (collection.length === 0) {
-            return res.status(400).json({ message: "Nothing collection"});
+        try {
+            const collectionId = req.params.id;
+            if (!collectionId) {
+                return throw new Error("Collection id not found");
+            }
+            const collection = await StoreService.getCollectionById(collectionId);
+            if (collection.length === 0) {
+                return throw new Error("Nothing collection");
+            }
+            return res.status(200).json({message: "Collection found", data: collection});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
         }
-        res.status(200).json({message: "Collection found", data: collection});
     };
     getSneakerById = async (req, res) => {
-        const sneakerId = req.params.sneakerId;
-        const collectionId = req.params.collectionId;
-        const sneaker = await StoreService.getSneakerById(collectionId,sneakerId);
-        if (sneaker.length === 0) {
-            return res.status(400).json({ message: "Nothing sneaker"});
+        try {
+            const sneakerId = req.params.sneakerId;
+            if (!sneakerId) {
+                return throw new Error("Sneaker id not found");
+            }
+            const collectionId = req.params.collectionId;
+            if (!collectionId) {
+                return throw new Error("Collection id not found");
+            }
+            const sneaker = await StoreService.getSneakerById(collectionId,sneakerId);
+            if (!sneaker) {
+                return throw new Error("Nothing sneaker");
+            }
+            return res.status(200).json({message: "Sneaker found", data: sneaker});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
         }
-        res.status(200).json({message: "Sneaker found", data: sneaker});
     };
     getSubscriptions = async (req, res) => {
-        const subscriptions = await StoreService.getSubscriptions();
-        if (subscriptions.length === 0) {
-            return res.status(400).json({ message: "Nothing subscriptions"});
+        try {
+            const subscriptions = await StoreService.getSubscriptions();
+            if (!subscriptions) {
+                return throw new Error("Nothing subscriptions");
+            }
+            return res.status(200).json({message: "Subscriptions found", data: subscriptions});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
         }
-        res.status(200).json({message: "Subscriptions found", data: subscriptions});
     };
     getSubscriptionById = async (req, res) => {
-        const subscriptionId = req.params.id;
-        const subscription = await StoreService.getSubscriptionById(subscriptionId);
-        if (subscription.length === 0) {
-            return res.status(400).json({ message: "Nothing subscription"});
+        try {
+            const subscriptionId = req.params.id;
+            if (!subscriptionId) {
+                return throw new Error("Subscription id not found");
+            }
+            const subscription = await StoreService.getSubscriptionById(subscriptionId);
+            if (!subscription) {
+                return throw new Error("Nothing subscription");
+            }
+            return res.status(200).json({message: "Subscription found", data: subscription});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
         }
-        res.status(200).json({message: "Subscription found", data: subscription});
     };
     StoreCheckout = StoreCheckoutController
 
