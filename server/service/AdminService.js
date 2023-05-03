@@ -477,7 +477,7 @@ class AdminService{
                 code: promoCodeData.id,
                 discount: promoCodeData.percent_off.toString(),
                 maxRedeem: parseInt(promoCodeData.max_redemptions),
-                endTime: (new Date(promoCodeData.redeem_by)).toString(),
+                endTime: (new Date(promoCodeData.redeem_by * 1000)).toString(),
                 duration: promoCodeData.duration,
                 valid: promoCodeData.valid
             }

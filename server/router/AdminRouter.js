@@ -33,7 +33,7 @@ exports.router = (() => {
     router.route('/subscription/:subscriptionId').delete(AdminController.deleteSubscription);
     router.route('/subscription/paid').get(AdminController.getSubscriptionsPaid);
     router.route('/promo-code').get(AdminController.getPromoCodes);
-    router.route('/promo-code').post(AdminController.addPromoCode);
+    router.route('/promo-code').post(upload.none(),AdminController.addPromoCode);
     router.route('/promo-code/:id').delete(AdminController.deletePromoCode);
     router.route('/reload-image').get(AdminController.deleteImage);
     return router;

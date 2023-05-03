@@ -245,13 +245,14 @@ class AdminController {
             max_redemptions: parseInt(max_redemptions), // 1
             redeem_by: redeem, // 1620000000
         });
-        await AdminService.addPromoCode(coupon);
-        res.status(201).json(coupon);
+        const response = await AdminService.addPromoCode(coupon);
+        res.status(201).json({message: "Promo code added successfully", data: response});
     }
     deletePromoCode = async (req, res) => {
         const idCoupon = req.params.id;
         const coupon = await AdminService.deletePromoCode(idCoupon);
         res.status(201).json(coupon);
+
     }
     deleteImage = async (req, res) => {
         const image = await AdminService.deleteImage();
