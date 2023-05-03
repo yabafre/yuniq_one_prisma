@@ -1,7 +1,7 @@
 require('dotenv').config();
 const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE, STRIPE_WEBHOOK_SECRET} = process.env;
-const UserService = require ("../service/UserService");
-const StoreService = require ("../service/StoreService");
+const UserService = require ("../../service/UserService");
+const StoreService = require ("../../service/StoreService");
 const bcrypt = require("bcryptjs");
 const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 

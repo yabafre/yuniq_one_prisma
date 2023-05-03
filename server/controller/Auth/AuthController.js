@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 const JWT = require("jsonwebtoken");
-const UserService = require("../service/UserService");
+const UserService = require("../../service/UserService");
 const DateTime = require("luxon").DateTime;
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET;
 const { PrismaClient } = require('@prisma/client')

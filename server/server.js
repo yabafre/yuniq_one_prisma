@@ -28,9 +28,8 @@ const StoreRouter = require ('./router/StoreRouter').router
 const ProfileRouter = require ('./router/ProfileRouter').router
 
 app.use(bodyParser.json())
-// app.use('/api', (req, res, next) => {
+// app.use('/api', (req, res) => {
 //     res.send('Hello to Yuniq store Api !')
-//     next();
 // })
 app.use('/api/auth', AuthRouter)
 app.use('/api/admin', AdminRouter)
@@ -54,20 +53,21 @@ function startServer() {
     });
 
     server.on("error", (err) => {
-        server.close(() => {
-            handleError(err);
-        });
-    });
+        console.log(err);
+        console.log("Restarting server in 3 seconds...");
+        setTimeout(() => {
+            startServer();
+        }, 3000);
+    } );
 }
 
+startServer();
 
-function handleError(err) {
+// restart the server if nodemon crash
+process.on("unhandledRejection", (err) => {
     console.log(err);
     console.log("Restarting server in 3 seconds...");
     setTimeout(() => {
         startServer();
     }, 3000);
-}
-
-
-startServer();
+});

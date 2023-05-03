@@ -207,7 +207,7 @@ class AdminService{
         });
 
         if (!deletedSneaker) {
-            return 'Sneaker not found';
+            return false;
         }
 
         await prisma.sneaker.deleteMany({

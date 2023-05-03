@@ -1,61 +1,27 @@
-const StoreService = require ("../service/StoreService");
-const UserService = require ("../service/UserService");
+const StoreService = require("../../service/StoreService");
+const UserService = require("../../service/UserService");
 require('dotenv').config();
 const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE} = process.env;
 const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 
+class StoreCheckoutController {
 
-class StoreFrontController {
-    home = async (req, res) => {
-        const user = await StoreService.getUser(req.user.id);
-        res.json({message: ` Welcome to store  ${user.firstname} !`, data: user});
-    }
-    getCollection = async (req, res) => {
-        const collections = await StoreService.getCollection();
-        if (collections.length === 0) {
-            return res.status(400).json({ message: "Nothing collections"});
-        }
-        res.status(200).json({message: "Collections found", data: collections});
-    };
-    getCollectionById = async (req, res) => {
-        const collectionId = req.params.id;
-        const collection = await StoreService.getCollectionById(collectionId);
-        if (collection.length === 0) {
-            return res.status(400).json({ message: "Nothing collection"});
-        }
-        res.status(200).json({message: "Collection found", data: collection});
-    };
-    getSneakerById = async (req, res) => {
-        const sneakerId = req.params.sneakerId;
-        const collectionId = req.params.collectionId;
-        const sneaker = await StoreService.getSneakerById(collectionId,sneakerId);
-        if (sneaker.length === 0) {
-            return res.status(400).json({ message: "Nothing sneaker"});
-        }
-        res.status(200).json({message: "Sneaker found", data: sneaker});
-    };
-    getSubscriptions = async (req, res) => {
-        const subscriptions = await StoreService.getSubscriptions();
-        if (subscriptions.length === 0) {
-            return res.status(400).json({ message: "Nothing subscriptions"});
-        }
-        res.status(200).json({message: "Subscriptions found", data: subscriptions});
-    };
-    getSubscriptionById = async (req, res) => {
-        const subscriptionId = req.params.id;
-        const subscription = await StoreService.getSubscriptionById(subscriptionId);
-        if (subscription.length === 0) {
-            return res.status(400).json({ message: "Nothing subscription"});
-        }
-        res.status(200).json({message: "Subscription found", data: subscription});
-    };
     // subscribe by card of user and create a subscription to stripe
-    subscribe = async (req, res) => {
+    static subscribe = async (req, res) => {
         const subscriptionId = parseInt(req.params.id);
         const { stripeToken, stripePriceId } = req.body;
         const userId = req.user.id;
 
         try {
+            if (!stripeToken) {
+                throw new Error("Stripe token not found");
+            }
+            if (!stripePriceId) {
+                throw new Error("Stripe price id not found");
+            }
+            if (!subscriptionId) {
+                throw new Error("Subscription id not found");
+            }
             const subscription = await StoreService.subscribe(subscriptionId, userId);
             const customer = await stripe.customers.create({
                 email: subscription.email,
@@ -67,9 +33,11 @@ class StoreFrontController {
                     postal_code: subscription.zip,
                 },
             });
+            // Add a default card for the customer
             const card = await stripe.customers.createSource(customer.id, {
                 source: stripeToken.id,
             });
+            // Create a subscription for the customer
 
             const subscriptionStripe = await stripe.subscriptions.create({
                 customer: customer.id,
@@ -84,6 +52,7 @@ class StoreFrontController {
                     brand: stripeToken.card.brand,
                     last4: stripeToken.card.last4,
                 },
+                coupon: req.body.coupon,
                 expand: ["latest_invoice.payment_intent"],
             });
             console.log(subscriptionStripe.latest_invoice.payment_intent.status)
@@ -96,7 +65,7 @@ class StoreFrontController {
             res.status(400).json({ message: error.message, data: error });
         }
     }
-    confirm_payment = async (req, res) => {
+    static confirm_payment = async (req, res) => {
         const subscriptionId = req.params.subscriptionId;
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const latest_invoice = await stripe.invoices.retrieve(subscription.latest_invoice);
@@ -122,8 +91,7 @@ class StoreFrontController {
             res.status(400).json({message: "Payment failed", data: payment_intent});
         }
     };
-
-    updateSubscription = async (req, res) => {
+    static updateSubscription = async (req, res) => {
         try {
             const userId = parseInt(req.params.userId);
             const { subscriptionId } = req.body;
@@ -147,11 +115,16 @@ class StoreFrontController {
             res.status(500).json({ message: 'Error updating subscription' });
         }
     }
-
-    addPurchase = async (req, res) => {
+    static addPurchase = async (req, res) => {
         try {
             const userId = req.user.id;
             const sneakerId = req.params.sneakerId;
+            if (!sneakerId) {
+                throw new Error('Sneaker ID missing');
+            }
+            if (userId !== req.user.id) {
+                return res.status(403).json({ message: "Access denied. You can't add a purchase to someone else's account" });
+            }
             const purchase = await StoreService.createPurchase(userId, sneakerId);
             res.status(201).json({ message: 'Purchase successful', purchase });
         } catch (error) {
@@ -159,9 +132,8 @@ class StoreFrontController {
             res.status(500).json({ message: 'Error making purchase' });
         }
     }
-
     // create a checkout session to stripe
-    checkout = async (req, res) => {
+    static checkout = async (req, res) => {
         const userId = req.user.id;
         const { subscriptionId } = req.body;
         const result = await StoreService.checkout(userId, subscriptionId);
@@ -199,7 +171,7 @@ class StoreFrontController {
 
         res.json(session);
     };
-    confirm_payment_checkout = async (req, res) => {
+    static confirm_payment_checkout = async (req, res) => {
         const { session_id } = req.query;
         const session = await stripe.checkout.sessions.retrieve(session_id);
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
@@ -226,9 +198,8 @@ class StoreFrontController {
             res.status(400).json({message: "Payment failed", data: payment_intent});
         }
     }
-
     // stripe webhook to update user data when payment is confirmed all month
 
 }
 
-module.exports = new StoreFrontController();
+module.exports = StoreCheckoutController;

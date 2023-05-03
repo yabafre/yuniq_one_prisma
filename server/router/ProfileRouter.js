@@ -1,7 +1,7 @@
 const express = require('express');
 const upload = require('../middleware/uploads-multer');
 const authMiddleware = require("../middleware/auth");
-const ProfileController = require ("../controller/ProfileController");
+const ProfileController = require ("../controller/Profile/ProfileController");
 
 exports.router = (() => {
     const router = express.Router();
