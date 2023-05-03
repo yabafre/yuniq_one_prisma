@@ -44,23 +44,23 @@ module.exports = {
                 !city ||
                 !zip
             ) {
-                return throw new Error( `Les champs ${firstnameError} ${lastnameError} ${emailError} ${passwordError} ${phoneError} ${locationError} ${cityError} ${zipError} sont obligatoires`);
+                throw new Error("Veuillez remplir les champs obligatoires ");
             }
             // regex pour l'email et le mot de passe
             const regexEmail = /^[a-zA-Z0-9._-]+@[a-z0-9._-]{2,}\.[a-z]{2,4}$/;
             const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
 
             if (!regexEmail.test(email)) {
-                return throw new Error("L'email n'est pas valide");
+                throw new Error("L'email n'est pas valide");
             }
             if (!regexPassword.test(password)) {
-                return throw new Error("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial");
+                throw new Error("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial");
             }
 
             // vérification email déjà utilisé
             const uniqEmail = await UserService.checkEmail(email);
             if (!uniqEmail) {
-                return throw new Error("L'email est déjà utilisé");
+                throw new Error("L'email est déjà utilisé");
             }
 
 
@@ -108,7 +108,7 @@ module.exports = {
                 }
             });
             if (!user) {
-                return throw new Error ('Utilisateur n\'a  pas être créé');
+                throw new Error ('Utilisateur n\'a  pas être créé');
             } else {
                 res.status(201).json({ message: "Utilisateur créé" });
                 next();
@@ -128,11 +128,11 @@ module.exports = {
                 }
             });
             if (!userFind) {
-                return throw new Error ('Utilisateur non trouvé')
+                throw new Error ('Utilisateur non trouvé')
             }
             const isMatch = await bcrypt.compare(password, userFind.password);
             if (!isMatch) {
-                return throw new Error('Mot de passe incorrect')
+                throw new Error('Mot de passe incorrect')
             }
             const payload = {
                 user: {

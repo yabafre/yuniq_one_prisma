@@ -183,6 +183,7 @@ class AdminSubscriptionController {
     addPromoCode = async (req, res) => {
         try {
             const {duration, id, percent_off, max_redemptions, redeem_by} = req.body;
+            console.log(req.body)
             if (!duration || !id || !percent_off || !max_redemptions || !redeem_by) {
                 throw new Error("All fields are required");
             }
@@ -204,6 +205,7 @@ class AdminSubscriptionController {
                 return res.status(201).json({message: "Promo code added successfully", data: response});
             }
         } catch (error) {
+            console.log(error.message)
             return res.status(500).json({message: error.message});
         }
     }

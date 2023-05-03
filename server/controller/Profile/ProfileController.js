@@ -13,7 +13,7 @@ class ProfileController{
             const userProfile = await UserService.getUserProfile(userId);
             // res data : user profile
            if (!userProfile) {
-               return throw new Error("User not found");
+               throw new Error("User not found");
            }
         } catch (error) {
             return res.status(500).json({message: error.message});
@@ -28,7 +28,7 @@ class ProfileController{
             }
             const updatedProfile = await UserService.updateUserProfile(userId, req.body);
             if (!updatedProfile) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             } else {
                 return res.status(200).json({message: "User updated successfully", data: updatedProfile});
             }
@@ -43,7 +43,7 @@ class ProfileController{
             // Récupérez les informations d'abonnement de l'utilisateur
             const user = await UserService.getUserProfile(userId);
             if (!user) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             }
             const stripeSubscriptionId = user.stripeSubscriptionId;
             if (stripeSubscriptionId) {
@@ -56,7 +56,7 @@ class ProfileController{
             // Supprimez le profil de l'utilisateur dans votre base de données
             const deleteById = await UserService.deleteUserProfile(userId);
             if (!deleteById) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             } else {
                 return res.status(200).json({message: "User deleted successfully", data: deleteById});
             }
@@ -70,7 +70,7 @@ class ProfileController{
             const userId = req.user.id;
             const subscriptions = await UserService.getUserSubscriptions(userId);
             if (subscriptions === null || !subscriptions ) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             }
             res.status(200).json({ message: "Subscription found", data: subscriptions });
         } catch (error) {
@@ -83,7 +83,7 @@ class ProfileController{
             const userId = req.user.id;
             const purchases = await UserService.getUserPurchases(userId);
             if (purchases.length === 0 || !purchases) {
-                return throw new Error("Nothing purchase found");
+                throw new Error("Nothing purchase found");
             }
             res.status(200).json({ message: "Purchases found", data: purchases });
         } catch (error) {
@@ -97,23 +97,23 @@ class ProfileController{
             const userId = req.user.id;
             const { newSubscriptionId } = req.body;
             if (!newSubscriptionId) {
-                return throw new Error("Subscription id is required");
+                throw new Error("Subscription id is required");
             }
             const currentSubscription = await UserService.getUserSubscriptions(userId); // Récupérez l'abonnement actuel de l'utilisateur
             if (!currentSubscription) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             }
             const newSubscription = await StoreService.getSubscriptionById(newSubscriptionId); // Récupérez le nouvel abonnement choisi par l'utilisateur
 
             if (!newSubscription) {
-                return throw new Error("Subscription not found");
+                throw new Error("Subscription not found");
             }
 
             // Mettez à jour l'abonnement de l'utilisateur dans votre base de données
             const updatedUser = await UserService.updateUserSubscriptions(userId, newSubscription);
 
             if (!updatedUser) {
-                return throw new Error("Failed to update user subscription");
+                throw new Error("Failed to update user subscription");
             }
             // Mettez à jour l'abonnement de l'utilisateur dans Stripe
             const stripeSubscription = await stripe.subscriptions.retrieve(currentSubscription.stripeSubscriptionId);
@@ -140,7 +140,7 @@ class ProfileController{
             const userId = req.user.id;
             const paymentDetails = await UserService.getUserPaymentDetails(userId);
             if (!paymentDetails) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             } else {
                 res.status(200).json({ message: "Payment details found", data: paymentDetails });
             }
@@ -154,11 +154,11 @@ class ProfileController{
             const userId = req.user.id;
             const { stripeCustomerId } = req.body;
             if (!stripeCustomerId) {
-                return throw new Error("Stripe customer id is required");
+                throw new Error("Stripe customer id is required");
             }
             const updatedUser = await UserService.getUserProfile(userId);
             if (!updatedUser) {
-                return throw new Error("User not found");
+                throw new Error("User not found");
             }
             // Créez une session de portail client
             const session = await stripe.billingPortal.sessions.create({
@@ -170,7 +170,7 @@ class ProfileController{
             if (session) {
                 res.status(200).json({ message: "Stripe customer updated", data: session.url });
             } else {
-                return throw new Error("Failed to update stripe customer");
+                throw new Error("Failed to update stripe customer");
             }
         } catch (error) {
             return res.status(500).json({message: error.message});
@@ -182,11 +182,11 @@ class ProfileController{
             const userId = req.user.id;
             const { password } = req.body;
             if (!password) {
-                return throw new Error("Password is required");
+                throw new Error("Password is required");
             }
             const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
             if (!passwordRegex.test(password)) {
-                return throw new Error("Le mot de passe doit contenir au moins 8 caractères, dont au moins une majuscule, une minuscule et un chiffre");
+                throw new Error("Le mot de passe doit contenir au moins 8 caractères, dont au moins une majuscule, une minuscule et un chiffre");
             }
 
             const salt = bcrypt.genSaltSync(10);
@@ -194,7 +194,7 @@ class ProfileController{
 
             const updatedProfile = await UserService.updateUserProfile(userId, { password: newPassword });
             if (!updatedProfile) {
-                return throw new Error("Failed to update password");
+                throw new Error("Failed to update password");
             } else {
                 res.status(200).json({ message: "Password updated", data: updatedProfile });
             }

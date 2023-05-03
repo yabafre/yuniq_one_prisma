@@ -98,11 +98,11 @@ class StoreCheckoutController {
                 throw new Error('Sneaker ID missing');
             }
             if (userId !== req.user.id) {
-                return throw new Error("Access denied. You can't add a purchase to someone else's account" );
+                throw new Error("Access denied. You can't add a purchase to someone else's account" );
             }
             const purchase = await StoreService.createPurchase(userId, sneakerId);
             if (!purchase) {
-                return throw new Error('Error creating purchase');
+                throw new Error('Error creating purchase');
             } else {
                 return res.status(200).json({ message: 'Purchase created', data: purchase });
             }
