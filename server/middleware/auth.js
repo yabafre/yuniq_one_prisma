@@ -20,7 +20,7 @@ async function authMiddleware(req, res, next) {
         next();
     } catch (e) {
         console.error(e);
-        res.status(500).send({ message: "Invalid Token" });
+        res.status(400).send({ message: "Invalid Token" });
     }
 }
 

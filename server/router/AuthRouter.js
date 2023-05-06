@@ -6,8 +6,8 @@ exports.router = (() => {
     const router = express.Router();
     // route for register and login
     router.route('/register').post(upload.single('avatar'),userAuth, createToken, register);
-    router.route('/login').post(login);
-    router.route('/forgot-password').post(forgotPassword);
-    router.route('/reset-password').post(resetPassword);
+    router.route('/login').post(upload.none(),login);
+    router.route('/forgot-password').post(upload.none(),forgotPassword);
+    router.route('/reset-password').post(upload.none(),resetPassword);
     return router
 })();

@@ -16,7 +16,7 @@ class ProfileController{
                throw new Error("User not found");
            }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -33,7 +33,7 @@ class ProfileController{
                 return res.status(200).json({message: "User updated successfully", data: updatedProfile});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -61,7 +61,7 @@ class ProfileController{
                 return res.status(200).json({message: "User deleted successfully", data: deleteById});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -74,7 +74,7 @@ class ProfileController{
             }
             res.status(200).json({ message: "Subscription found", data: subscriptions });
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -87,7 +87,7 @@ class ProfileController{
             }
             res.status(200).json({ message: "Purchases found", data: purchases });
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -130,7 +130,7 @@ class ProfileController{
             res.status(200).json({ message: "Subscription updated", user: updatedUser });
 
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
 
     };
@@ -145,7 +145,7 @@ class ProfileController{
                 res.status(200).json({ message: "Payment details found", data: paymentDetails });
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 
@@ -173,7 +173,7 @@ class ProfileController{
                 throw new Error("Failed to update stripe customer");
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
 
@@ -199,7 +199,7 @@ class ProfileController{
                 res.status(200).json({ message: "Password updated", data: updatedProfile });
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
 

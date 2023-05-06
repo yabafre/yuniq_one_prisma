@@ -108,7 +108,7 @@ class StoreCheckoutController {
             }
         } catch (error) {
             console.error(`Error making purchase for user with ID ${req.user.id}: ${error.message}`);
-            return res.status(500).json({ message: error.message });
+            return res.status(400).json({ message: error.message });
         }
     }
     // create a checkout session to stripe

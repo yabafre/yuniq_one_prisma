@@ -7,7 +7,7 @@ class AdminSneakerController {
             const sneakers = await AdminService.getSneakers();
             res.status(200).json({message: 'Sneakers retrieved successfully', data: sneakers});
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     addSneaker = async (req, res) => {
@@ -65,7 +65,7 @@ class AdminSneakerController {
                 throw new Error('Failed to add sneaker');
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     updateSneaker = async (req, res) => {
@@ -108,7 +108,7 @@ class AdminSneakerController {
                 throw new Error('Sneaker not found');
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     deleteSneaker = async (req, res) => {
@@ -124,7 +124,7 @@ class AdminSneakerController {
                 throw new Error('Sneaker not found');
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     addSizeToSneaker = async (req, res) => {
@@ -151,7 +151,7 @@ class AdminSneakerController {
                 throw new Error('Error adding size to sneaker');
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     deleteSizeFromSneaker = async (req, res) => {
@@ -171,7 +171,7 @@ class AdminSneakerController {
                 throw new Error('Error deleting size from sneaker');
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
 }

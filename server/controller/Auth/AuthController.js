@@ -79,7 +79,7 @@ module.exports = {
             res.avatar = avatar ? avatar : null;
             next();
         } catch (error) {
-            return res.status(500).json({ message: error.message });
+            return res.status(400).json({ message: error.message });
         }
     },
     // création du Token
@@ -114,7 +114,7 @@ module.exports = {
                 next();
             }
         } catch (error) {
-            res.status(500).json({message: error.message});
+            res.status(400).json({message: error.message});
         }
     },
     // login session
@@ -150,7 +150,7 @@ module.exports = {
                 }
             );
         } catch (error) {
-            res.status(500).json({message: error.message});
+            res.status(400).json({message: error.message});
         }
     },
     // logout session by deleting token jwt in localstorage
@@ -158,7 +158,7 @@ module.exports = {
     // forgot password
     async forgotPassword(req, res) {
         const { email } = req.body;
-
+        console.log(req.body)
         try {
             const user = await prisma.user.findUnique({
                 where: {
@@ -207,12 +207,12 @@ module.exports = {
 
             transporter.sendMail(mailOptions, (err) => {
                 if (err) {
-                    return res.status(500).json({ message: "Erreur lors de l'envoi de l'e-mail", err });
+                    return res.status(400).json({ message: "Erreur lors de l'envoi de l'e-mail", err });
                 }
                 res.status(200).json({ message: "E-mail de réinitialisation de mot de passe envoyé" });
             });
         } catch (error) {
-            res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
+            res.status(400).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
         }
     },
     // reset password
@@ -253,7 +253,7 @@ module.exports = {
 
             res.status(200).json({ message: "Mot de passe réinitialisé avec succès" });
         } catch (error) {
-            res.status(500).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
+            res.status(400).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
         }
     }
 };

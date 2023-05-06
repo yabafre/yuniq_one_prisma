@@ -23,7 +23,7 @@ class AdminCollectionController {
             if (!collection) throw new Error("Collection not created");
             return res.status(200).json({message: "Collection created successfully", data: collection});
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     static updateCollection = async (req, res) => {
@@ -40,7 +40,7 @@ class AdminCollectionController {
             if (!collection) throw new Error("Collection not found");
             return res.status(200).json({message: "Collection updated successfully", data: collection});
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     static deleteCollection = async (req, res) => {
@@ -51,7 +51,7 @@ class AdminCollectionController {
             if (!collection) throw new Error("Collection not found");
             return res.status(200).json({message: "Collection deleted successfully", data: collection});
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
 }

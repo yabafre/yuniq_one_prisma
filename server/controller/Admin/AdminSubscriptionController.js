@@ -11,7 +11,7 @@ class AdminSubscriptionController {
                 throw new Error("Subscriptions not found");
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     addSubscription = async (req, res) => {
@@ -67,7 +67,7 @@ class AdminSubscriptionController {
                 res.status(201).json({message: "Subscription added successfully", data: save});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     };
     updateSubscription = async (req, res) => {
@@ -137,7 +137,7 @@ class AdminSubscriptionController {
                return res.status(201).json({message: "Subscription updated successfully", data: save});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     deleteSubscription = async (req, res) => {
@@ -153,7 +153,7 @@ class AdminSubscriptionController {
                 return res.status(200).json({message: "Subscription deleted successfully", data: subscription});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     getSubscriptionsPaid = async (req, res) => {
@@ -165,7 +165,7 @@ class AdminSubscriptionController {
                 return res.status(200).json({message: "Subscriptions retrieved successfully", data: subscriptions});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     getPromoCodes = async (req, res) => {
@@ -177,7 +177,7 @@ class AdminSubscriptionController {
                 return res.status(200).json({message: "Promo codes retrieved successfully", data: coupons});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     addPromoCode = async (req, res) => {
@@ -206,7 +206,7 @@ class AdminSubscriptionController {
             }
         } catch (error) {
             console.log(error.message)
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
     }
     deletePromoCode = async (req, res) => {
@@ -222,7 +222,7 @@ class AdminSubscriptionController {
                 return res.status(200).json({message: "Promo code deleted successfully", data: coupon});
             }
         } catch (error) {
-            return res.status(500).json({message: error.message});
+            return res.status(400).json({message: error.message});
         }
 
     }
