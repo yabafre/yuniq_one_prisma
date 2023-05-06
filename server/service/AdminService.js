@@ -17,6 +17,18 @@ class AdminService{
         const adminData = _.pick(admin, ['id', 'email', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
         return adminData;
     }
+
+    getAllUsers = async () =>{
+        const users = prisma.user.findMany({
+            include: {
+                subscription: true,
+                events: true,
+                purchases: true,
+                paymentDetails: true,
+            }
+        })
+        return users;
+    }
     getAllUsersWithSubscriptions = async () => {
         // get all users we are subscription
         const users = await prisma.user.findMany({

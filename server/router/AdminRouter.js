@@ -10,6 +10,8 @@ exports.router = (() => {
     router.use(adminMiddleware);
     //route admin
     router.route('/').get(AdminController.getAdmin);
+    //route user
+    router.route('/users').get(AdminController.getAllUsers);
     //route user with subscription
     router.route('/users/subs').get(AdminController.getAllUsersWithSubscriptions);
     //route sneaker

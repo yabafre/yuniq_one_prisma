@@ -11,9 +11,13 @@ class AdminController {
         const admin = await AdminService.getAdmin(id);
         res.status(200).json(admin);
     }
+    getAllUsers = async (req, res) => {
+        const users = await AdminService.getAllUsers();
+        res.status(200).json({message: 'Users retrieved successfully', data: users});
+    }
     getAllUsersWithSubscriptions = async (req, res) => {
         const users = await AdminService.getAllUsersWithSubscriptions();
-        res.status(200).json({message: 'Users retrieved successfully', data: users});
+        res.status(200).json({message: 'Users With Subscriptions retrieved successfully', data: users});
     }
     deleteImage = async (req, res) => {
         const image = await AdminService.deleteImage();
