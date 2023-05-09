@@ -43,6 +43,15 @@ class AdminService{
         } );
         return users;
     }
+    updateUser = async (userId, userData) => {
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: parseInt(userId)
+            },
+            data: userData
+        });
+        return updatedUser;
+    }
     getSneakers = async () => {
         const sneakers = await prisma.sneaker.findMany({
             include: {

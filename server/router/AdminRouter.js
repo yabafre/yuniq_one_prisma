@@ -12,6 +12,7 @@ exports.router = (() => {
     router.route('/').get(AdminController.getAdmin);
     //route user
     router.route('/users').get(AdminController.getAllUsers);
+    router.route('/users/:id').put(upload.single('avatar'),AdminController.updateUser);
     //route user with subscription
     router.route('/users/subs').get(AdminController.getAllUsersWithSubscriptions);
     //route sneaker
