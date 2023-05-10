@@ -63,15 +63,19 @@ class UserService{
     };
 
     getUserSubscriptions = async (userId) => {
-        const user = await prisma.user.findUnique({
+        const user = await prisma.user.findMany({
             where: {
-                id: userId
+                id: parseInt(userId)
             },
             include: {
-                subscription: true
+                subscription: true,
+                purchases: false,
+                paymentDetails: false,
+                events: false,
+                _count: false
             }
         });
-        return user.subscription;
+        return user[0];
     };
 
     getUserPurchases = async (userId) => {
@@ -89,16 +93,16 @@ class UserService{
     updateUserSubscriptions = async (userId, updatedSubscriptions) => {
         const user = await prisma.user.update({
             where: {
-                id: userId
+                id: parseInt(userId)
             },
             data: {
-                subscription: updatedSubscriptions.id,
-                subscriptionId: updatedSubscriptions.subscriptionId
+                subscriptionId: parseInt(updatedSubscriptions.subscriptionId),
             },
         });
 
         return user;
     };
+
 
     getUserPaymentDetails = async (userId) => {
         // Assuming that the user's payment details are stored in the User model

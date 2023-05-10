@@ -79,7 +79,7 @@ class StoreService {
                 users: false
             }
         });
-        return subscription;
+        return subscription[0];
     };
     subscribe = async (subscriptionId, userId) => {
         const user = await prisma.user.update({

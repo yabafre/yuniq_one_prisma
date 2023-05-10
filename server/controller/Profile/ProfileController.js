@@ -152,10 +152,10 @@ class ProfileController{
     updateStripeCustomer = async (req, res) => {
         try {
             const userId = req.user.id;
-            const { stripeCustomerId } = req.body;
-            if (!stripeCustomerId) {
-                throw new Error("Stripe customer id is required");
-            }
+            // const { stripeCustomerId } = req.body;
+            // if (!stripeCustomerId) {
+            //     throw new Error("Stripe customer id is required");
+            // }
             const updatedUser = await UserService.getUserProfile(userId);
             if (!updatedUser) {
                 throw new Error("User not found");

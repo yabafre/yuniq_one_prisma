@@ -15,6 +15,7 @@ exports.router = (() => {
     router.route('/users/:id').put(upload.single('avatar'),AdminController.updateUser);
     //route user with subscription
     router.route('/users/subs').get(AdminController.getAllUsersWithSubscriptions);
+    router.route('/users/:id/sub').put(upload.none(),AdminController.updateUserSubscription);
     //route sneaker
     router.route('/sneaker').get(AdminController.sneaker.getSneakers);
     router.route('/sneaker').post(upload.fields([
