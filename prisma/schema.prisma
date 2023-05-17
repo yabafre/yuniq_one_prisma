@@ -155,11 +155,16 @@ model Event {
 
 // Relations
 model EventSneaker {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
+  image     String
+  content   String
+  etat      Boolean  @default(true)
+  date      DateTime @default(now())
+  author    String
   eventId   Int
-  event     Event   @relation(fields: [eventId], references: [id])
+  event     Event    @relation(fields: [eventId], references: [id])
   sneakerId Int
-  sneaker   Sneaker @relation(fields: [sneakerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sneaker   Sneaker  @relation(fields: [sneakerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model codePromo {
