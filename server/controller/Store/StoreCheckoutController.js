@@ -178,7 +178,6 @@ class StoreCheckoutController {
         }
     }
     // stripe webhook to update user data when payment is confirmed all month
-
 }
 
 module.exports = StoreCheckoutController;

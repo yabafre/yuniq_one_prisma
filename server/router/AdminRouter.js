@@ -45,6 +45,11 @@ exports.router = (() => {
     router.route('/promo-code').get(AdminController.subscription.getPromoCodes);
     router.route('/promo-code').post(upload.none(),AdminController.subscription.addPromoCode);
     router.route('/promo-code/:id').delete(AdminController.subscription.deletePromoCode);
+    //route event
+    router.route('/event').get(AdminController.event.getAllEvents);
+    router.route('/event').post(upload.single('image'),AdminController.event.addEvent);
+    router.route('/event/:id').put(upload.single('image'),AdminController.event.updateEvent);
+    router.route('/event/:id').delete(AdminController.event.deleteEvent);
     //route reload image
     router.route('/reload-image').get(AdminController.deleteImage);
     return router;

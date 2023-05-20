@@ -7,7 +7,6 @@ const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
 const cloudinary = require('../service/CloudinaryService');
 
 class AdminService{
-
     getAdmin = async (id) => {
         const admin = await prisma.user.findUnique({
             where: {
@@ -17,12 +16,10 @@ class AdminService{
         const adminData = _.pick(admin, ['id', 'email', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
         return adminData;
     }
-
     getAllUsers = async () =>{
         const users = prisma.user.findMany({
             include: {
                 subscription: true,
-                events: true,
                 purchases: true,
                 paymentDetails: true,
             }
@@ -522,6 +519,111 @@ class AdminService{
             })
             return `Delete coupon success`;
         }
+    }
+    getAllEvents = async() => {
+        const events = await prisma.event.findMany(
+            {
+                include: {
+                    sneakers: true,
+                }
+            }
+        );
+        return events;
+    }
+    addEvent = async (eventData) => {
+        const sneakerSet = JSON.parse(eventData.sneakers);
+        const event = await prisma.event.create({
+            data: {
+                title: eventData.title,
+                date: new Date(eventData.date),
+                content: eventData.content,
+                image: eventData.image,
+                etat: eventData.etat,
+                author: eventData.author,
+                sneakers: {
+                    create: sneakerSet.map(sneaker => ({
+                        sneakerId: parseInt(sneaker.sneakerId),
+                    })),
+                }
+            },
+            include: {
+                sneakers: true,
+            }
+        });
+        return event;
+    }
+    updateEvent = async (eventId, eventData) => {
+        const updateData = {};
+        if (eventData.title !== undefined) {
+            updateData.title = eventData.title;
+        }
+        if (eventData.date !== undefined) {
+            updateData.date = eventData.date;
+        }
+        if (eventData.content !== undefined) {
+            updateData.content = eventData.content;
+        }
+        if (eventData.image !== undefined) {
+            updateData.image = eventData.image;
+        }
+        if (eventData.etat !== undefined) {
+            updateData.etat = eventData.etat;
+        }
+        if (eventData.author !== undefined) {
+            updateData.author = eventData.author;
+        }
+        if (eventData.sneakers !== undefined) {
+            const updatedSneakers = JSON.parse(eventData.sneakers);
+            const currentSneakers = await prisma.eventSneaker.findMany({where: {eventId: parseInt(eventId)}});
+
+            const updatedSneakerIds = updatedSneakers.map(sneaker => parseInt(sneaker.sneakerId));
+            const currentSneakerIds = currentSneakers.map(sneaker => sneaker.sneakerId);
+
+            const disconnectSneakers = currentSneakers.filter(sneaker => !updatedSneakerIds.includes(sneaker.sneakerId));
+            const connectSneakers = updatedSneakers.filter(sneaker => !currentSneakerIds.includes(parseInt(sneaker.sneakerId)));
+
+            // disconnect sneakers
+            for (let sneaker of disconnectSneakers) {
+                await prisma.eventSneaker.delete({
+                    where: { id: sneaker.id }
+                });
+            }
+
+            // connect sneakers
+            for (let sneaker of connectSneakers) {
+                await prisma.eventSneaker.create({
+                    data: {
+                        eventId: parseInt(eventId),
+                        sneakerId: sneaker.sneakerId,
+                    }
+                });
+            }
+        }
+
+        // update the event without handling sneakers
+        delete updateData.sneakers;
+
+        const event = await prisma.event.update({
+            where: {
+                id: parseInt(eventId),
+            } ,
+            data: updateData,
+            include: {
+                sneakers: true,
+            }
+        });
+        console.log('update : ', event);
+        return event;
+    }
+    deleteEvent = async (eventId) => {
+        await prisma.eventSneaker.deleteMany({where: {eventId: parseInt(eventId)}});
+
+        const event = await prisma.event.delete({
+            where: {
+                id: parseInt(eventId),
+            },
+        });
+        return event;
     }
     // Upload the image to Cloudinary
     uploadImage = async (file) => {

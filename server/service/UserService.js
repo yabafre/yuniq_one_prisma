@@ -7,7 +7,7 @@ const cloudinary = require('../service/CloudinaryService');
 class UserService{
 
     getUserProfile = async (userId) => {
-        const userProfile = await prisma.user.findMany({
+        const userProfile = await prisma.user.findUnique({
             where: {
                 id: userId
             },
@@ -15,16 +15,16 @@ class UserService{
                 subscription: true,
                 purchases: true,
                 paymentDetails: true,
-                events: true,
                 _count: true
             }
         });
         const userProfileWithoutPassword = _.omit(userProfile, 'password');
-        if (userProfileWithoutPassword[0] === undefined) {
+        if (!userProfileWithoutPassword) {
             return false;
         }
-        return userProfileWithoutPassword[0];
+        return userProfileWithoutPassword;
     };
+
 
     checkEmail = async (email) => {
         const getEmail = await prisma.user.findUnique({
@@ -49,7 +49,7 @@ class UserService{
     deleteUserProfile = async (userId) => {
         let message;
         try {
-            await prisma.user.deleteMany({
+            await prisma.user.delete({
                 where: {
                     id: userId
                 }
@@ -63,7 +63,7 @@ class UserService{
     };
 
     getUserSubscriptions = async (userId) => {
-        const user = await prisma.user.findMany({
+        const user = await prisma.user.find({
             where: {
                 id: parseInt(userId)
             },
@@ -71,11 +71,10 @@ class UserService{
                 subscription: true,
                 purchases: false,
                 paymentDetails: false,
-                events: false,
                 _count: false
             }
         });
-        return user[0];
+        return user;
     };
 
     getUserPurchases = async (userId) => {
@@ -102,7 +101,6 @@ class UserService{
 
         return user;
     };
-
 
     getUserPaymentDetails = async (userId) => {
         // Assuming that the user's payment details are stored in the User model

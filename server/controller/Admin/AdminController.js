@@ -2,6 +2,7 @@ const AdminService = require("../../service/AdminService");
 const AdminSneakersController = require("./AdminSneakerController");
 const AdminCollectionController = require("./AdminCollectionController");
 const AdminSubscriptionController = require("./AdminSubscriptionController");
+const AdminEventController = require("./AdminEventController");
 const UserService = require("../../service/UserService");
 const StoreService = require("../../service/StoreService");
 require('dotenv').config();
@@ -45,7 +46,6 @@ class AdminController {
             return res.status(400).json({message: error.message});
         }
     }
-
     updateUserSubscription = async (req, res) => {
         try {
             console.log(req.body);
@@ -95,13 +95,12 @@ class AdminController {
         }
 
     };
-
     deleteImage = async (req, res) => {
         const image = await AdminService.deleteImage();
         res.status(201).json({message: "Image deleted successfully", data: image});
     }
-
     sneaker = AdminSneakersController;
+    event = AdminEventController;
     collection = AdminCollectionController;
     subscription = AdminSubscriptionController;
 }

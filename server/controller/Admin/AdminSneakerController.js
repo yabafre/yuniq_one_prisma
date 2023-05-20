@@ -46,7 +46,7 @@ class AdminSneakerController {
             if (!parsedSizes.length) {
                 throw new Error('Sizes are required');
             }
-            if (!images.length) {
+            if (!images) {
                 throw new Error('Images are required');
             }
             if (!req.body.name) {

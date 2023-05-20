@@ -5,14 +5,14 @@ const _ = require('lodash');
 class StoreService {
 
     getUser = async (id) => {
-        const user = await prisma.user.findMany({
+        const user = await prisma.user.findUnique({
             where: {
                 id: id
             }
         });
         const userWithoutPassword = _.omit(user, 'password');
-        console.log(userWithoutPassword[0])
-        return userWithoutPassword[0];
+        console.log(userWithoutPassword)
+        return userWithoutPassword;
     }
     getCollection = async () => {
         const collections = await prisma.collection.findMany(
@@ -69,7 +69,7 @@ class StoreService {
         return subscriptions;
     };
     getSubscriptionById = async (id) => {
-        const subscription = await prisma.subscription.findMany({
+        const subscription = await prisma.subscription.findUnique({
             where: {
                 id: parseInt(id)
             },
@@ -79,7 +79,7 @@ class StoreService {
                 users: false
             }
         });
-        return subscription[0];
+        return subscription;
     };
     subscribe = async (subscriptionId, userId) => {
         const user = await prisma.user.update({
