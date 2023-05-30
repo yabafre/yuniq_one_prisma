@@ -8,6 +8,7 @@ const app = express()
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const bodyParser = require('body-parser')
+const io = require('@pm2/io')
 const https = require('https')
 
 const sslOptions = {
@@ -31,10 +32,17 @@ app.use(bodyParser.json())
 // app.use('/api', (req, res) => {
 //     res.send('Hello to Yuniq store Api !')
 // })
+io.init({
+    transactions: true,
+    http: true,
+});
+
 app.use('/api/auth', AuthRouter)
 app.use('/api/admin', AdminRouter)
 app.use('/api/profile', ProfileRouter)
 app.use('/api/store', StoreRouter)
+
+
 prisma.$connect()
     .then(
         () => console.log('Prisma connected to database !'))

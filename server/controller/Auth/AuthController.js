@@ -88,7 +88,7 @@ module.exports = {
         next();
     },
     // enregistrement du nouvel utilisateur
-    async register(req, res, next) {
+    async register(req, res) {
         const { firstname, lastname, email, password, phone, avatar, location, city, zip } = res;
         const { token } = res;
         console.log(firstname, lastname, email, password, phone, avatar, location, city, zip)
@@ -111,7 +111,6 @@ module.exports = {
                 throw new Error ('Utilisateur n\'a  pas être créé');
             } else {
                 res.status(201).json({ message: "Utilisateur créé" });
-                next();
             }
         } catch (error) {
             res.status(400).json({message: error.message});

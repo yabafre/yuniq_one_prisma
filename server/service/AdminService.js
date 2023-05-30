@@ -13,7 +13,7 @@ class AdminService{
                 id: id
             }
         });
-        const adminData = _.pick(admin, ['id', 'email', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
+        const adminData = _.pick(admin, ['id', 'email', 'phone', 'city', 'location', 'zip', 'firstname', 'lastname', 'isAdmin', 'avatar', 'token']);
         return adminData;
     }
     getAllUsers = async () =>{
