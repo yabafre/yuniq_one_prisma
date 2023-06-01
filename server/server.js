@@ -11,10 +11,10 @@ const bodyParser = require('body-parser')
 const io = require('@pm2/io')
 const https = require('https')
 
-const sslOptions = {
-    key: fs.readFileSync('./server/localhost-key.pem'),
-    cert: fs.readFileSync('./server/localhost.pem')
-}
+// const sslOptions = {
+//     key: fs.readFileSync('./server/localhost-key.pem'),
+//     cert: fs.readFileSync('./server/localhost.pem')
+// }
 
 app.use(compression())
 app.use(cors())
