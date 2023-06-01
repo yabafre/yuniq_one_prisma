@@ -47,7 +47,9 @@ prisma.$connect()
     .then(
         () => console.log('Prisma connected to database !'))
     .catch((err) => console.log(err))
-
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
 // https.createServer(sslOptions, app).listen(port, () => {
 //     console.log(`Server running on port ${port}`)
 // }).on('error', (err) => {
@@ -55,27 +57,27 @@ prisma.$connect()
 // })
 
 
-function startServer() {
-    const server = app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
-
-    server.on("error", (err) => {
-        console.log(err);
-        console.log("Restarting server in 3 seconds...");
-        setTimeout(() => {
-            startServer();
-        }, 3000);
-    } );
-}
-
-startServer();
-
-// restart the server if nodemon crash
-process.on("unhandledRejection", (err) => {
-    console.log(err);
-    console.log("Restarting server in 3 seconds...");
-    setTimeout(() => {
-        startServer();
-    }, 3000);
-});
+// function startServer() {
+//     const server = app.listen(port, () => {
+//         console.log(`Server running on port ${port}`);
+//     });
+//
+//     server.on("error", (err) => {
+//         console.log(err);
+//         console.log("Restarting server in 3 seconds...");
+//         setTimeout(() => {
+//             startServer();
+//         }, 3000);
+//     } );
+// }
+//
+// startServer();
+//
+// // restart the server if nodemon crash
+// process.on("unhandledRejection", (err) => {
+//     console.log(err);
+//     console.log("Restarting server in 3 seconds...");
+//     setTimeout(() => {
+//         startServer();
+//     }, 3000);
+// });

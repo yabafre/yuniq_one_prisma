@@ -47,6 +47,7 @@ model Subscription {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 }
+
 // "day", "week", "month", "year"
 enum SubscriptionInterval {
   day
@@ -142,23 +143,24 @@ model PaymentDetail {
 
 model Event {
   id        Int            @id @default(autoincrement())
-  title      String
+  title     String
   image     String
-  content   String   @db.VarChar(255)
-  etat      Boolean  @default(true)
-  date      DateTime @default(now())
+  content   String         @db.VarChar(255)
+  etat      Boolean        @default(true)
+  date      DateTime       @default(now())
   author    String
   sneakers  EventSneaker[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
+
 // Relations
 model EventSneaker {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   eventId   Int
-  event     Event    @relation(fields: [eventId], references: [id])
+  event     Event   @relation(fields: [eventId], references: [id])
   sneakerId Int
-  sneaker   Sneaker  @relation(fields: [sneakerId], references: [id])
+  sneaker   Sneaker @relation(fields: [sneakerId], references: [id])
 }
 
 model codePromo {
