@@ -6,14 +6,13 @@ const start = promisify(pm2.start.bind(pm2));
 const list = promisify(pm2.list.bind(pm2));
 
 connect()
-    .then(() => start('server/server.js'))
+    .then(() => start('ecosystem.config.js'))
     .then(() => list())
-    .then((list) => {
-        console.log(list);
-        pm2.disconnect();
-    } )
-    .catch((err) => {
-        console.log(err);
-        pm2.disconnect();
-    } )
-
+    .then(processes => {
+        console.log(processes);
+        process.exit(0);
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        process.exit(1);
+    });
