@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"vite\" \"pm2 start server/server.js\"",
-    "serve": "pm2 start server/server.js\\",
+    "serve": "npx pm2 start server/server.js\\",
+    "start": "node server/server.js\\",
     "build": "vite build",
     "preview": "vite preview"
   },
