@@ -9,8 +9,20 @@ connect()
     .then(() => start('ecosystem.config.js'))
     .then(() => list())
     .then(processes => {
-        console.log(processes);
-        process.exit(0);
+        const yuniqApi = processes.find(p => p.name === 'yuniq-api');
+
+        if (!yuniqApi) {
+            throw new Error('yuniq-api not found in PM2 processes');
+        }
+
+        process.on('SIGINT', () => {
+            pm2.delete('yuniq-api', () => {
+                pm2.disconnect();
+                process.exit();
+            });
+        });
+
+        setInterval(() => {}, 1000);
     })
     .catch(err => {
         console.error('Error:', err);
