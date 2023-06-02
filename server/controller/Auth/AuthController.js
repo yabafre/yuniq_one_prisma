@@ -138,16 +138,15 @@ module.exports = {
                     id: userFind.id,
                 },
             };
-            JWT.sign(payload, SECRET_KEY, { expiresIn: 360000 },
-                (err, token) => {
-                    if (err) throw err;
-                    console.log(token)
-                    res.status(200).json({
-                        token,
-                        user: userFind,
-                    });
-                }
-            );
+           const token = JWT.sign(payload, SECRET_KEY, { expiresIn: '1h' });
+            console.log(token)
+            if (!token) {
+                throw new Error ('Token non généré')
+            }
+            res.status(200).json({
+                token,
+                user: userFind,
+            });
         } catch (error) {
             res.status(400).json({message: error.message});
         }
