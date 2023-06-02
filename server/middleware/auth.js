@@ -5,22 +5,24 @@ const {ACCESS_TOKEN_SECRET, TEST_JWT_SESSION} = process.env;
 
 async function authMiddleware(req, res, next) {
     const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1] || TEST_JWT_SESSION;
-
-    if (!token) {
-        return res.status(401).json({ message: "Auth Error" });
-    }
+    const token = authHeader && authHeader.split(' ')[1];
     try {
+        if (!token) {
+            throw new Error("No token, authorization denied");
+        }
         const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
+        if (!decoded) {
+            throw new Error("Invalid token");
+        }
         const user = await UserServices.getUserProfile(decoded.user.id);
         if (!user) {
-            return res.status(401).json({ message: "User not found" });
+            throw new Error("No user found");
         }
         req.user = decoded.user;
         next();
     } catch (e) {
         console.error(e);
-        res.status(400).send({ message: "Invalid Token" });
+        res.status(500).send({message: e.message});
     }
 }
 
