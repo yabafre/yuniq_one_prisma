@@ -58,9 +58,10 @@ class StoreService {
                 relatedEvents: true,
             }
         });
+        console.log(sneaker)
         const checkCollection = sneaker[0].relatedCollections.some(collection => collection.id === parseInt(collectionId));
         if (!checkCollection) {
-            return "Sneaker not found";
+            return false;
         }
         return sneaker;
     };
