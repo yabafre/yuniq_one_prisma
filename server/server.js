@@ -18,7 +18,7 @@ const https = require('https')
 
 app.use(compression())
 app.use(cors({
-    origin: "https://api.yuniq.fr" || "https://yuniq-api.onrender.com/" || "*",
+    origin: "https://yuniq-back.onrender.com" || "https://yuniq.fr" || "http://localhost:3066",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
