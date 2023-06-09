@@ -41,7 +41,7 @@ jobs:
           SITE_URL: ${{ inputs.site-url }}
         run: |
           npm ci
-          node start.js
+          npx pm2 start server/server.js
 
 # Please do not touch the following action
       - name: Store deployment content
