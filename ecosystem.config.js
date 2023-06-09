@@ -1,6 +1,6 @@
 module.exports = {
     apps: [{
-        script: 'server/server.js',
+        script: 'server.js',
         name: 'yuniq-api',
         exec_mode: 'cluster',
         instances: 2,

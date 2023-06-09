@@ -4,7 +4,7 @@ const _ = require('lodash');
 const fs = require('fs');
 require('dotenv').config();
 const stripe = require("stripe")(process.env.VITE_APP_STRIPE_API_SECRET);
-const cloudinary = require('../service/CloudinaryService');
+const cloudinary = require('./CloudinaryService');
 
 class AdminService{
     getAdmin = async (id) => {

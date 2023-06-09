@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 const _ = require('lodash');
 const fs = require('fs');
-const cloudinary = require('../service/CloudinaryService');
+const cloudinary = require('./CloudinaryService');
 
 class UserService{
 

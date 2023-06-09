@@ -32,4 +32,4 @@ coverage
 prisma/migrations/
 
 # localhost ssl certs
-server/*.pem
+*.pem
