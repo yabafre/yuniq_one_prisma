@@ -1,0 +1,57 @@
+# To better understand this file read this:
+# https://docs.ionos.space/docs/github-actions-customization/
+
+name: "Deploy Now: Execute Build"
+
+on:
+  workflow_call:
+    inputs:
+      site-url:
+        required: true
+        type: string
+      branch-id:
+        required: true
+        type: string
+
+env:
+  DEPLOYMENT_FOLDER: server
+
+jobs:
+# Please do not rename this job
+  build-project:
+    name: build Api
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: v16.x
+
+      - name: Build Node assets
+        env:
+          CI: true
+          DATABASE_URL: mysql://hwllwh7ppyjouedpl097:pscale_pw_g84mjyzcSMAV39es5wpkLT0uKJ5T7TY5myeE1AKRB2H@aws.connect.psdb.cloud/store?sslaccept=strict
+          PM2_PUBLIC_KEY: 1gfxy9tb1m7s3xf
+          PM2_SECRET_KEY: 9gt7t0xdl8vifwz
+          SITE_URL: ${{ inputs.site-url }}
+        run: |
+          npm ci
+          npm run serve
+
+# Please do not touch the following action
+      - name: Store deployment content
+        uses: ionos-deploy-now/artifact-action@v1
+        with:
+          api-key: ${{ secrets.IONOS_API_KEY }}
+          service-host: api-eu.ionos.space
+          project-id: 3d303fb1-3200-4f6c-beb7-91e173897cba
+          branch-id: ${{ inputs.branch-id }}
+          version: ${{ github.sha }}
+          folder: ${{ env.DEPLOYMENT_FOLDER }}
+          config-file: .deploy-now/Api/config.yaml
+          action: upload
