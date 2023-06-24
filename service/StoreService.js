@@ -66,7 +66,12 @@ class StoreService {
         return sneaker;
     };
     getSubscriptions = async () => {
-        const subscriptions = await prisma.subscription.findMany();
+        const subscriptions = await prisma.subscription.findMany({
+            include: {
+                _count: true,
+                relatedCollections: true,
+            }
+        });
         return subscriptions;
     };
     getSubscriptionById = async (id) => {
