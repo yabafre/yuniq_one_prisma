@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  // relationMode = "prisma"
 }
 
 model User {
@@ -139,6 +140,7 @@ model PaymentDetail {
   brand          String
   last4          String
   date           DateTime
+  invoiceLink    String   @db.VarChar(255)
 }
 
 model Event {
