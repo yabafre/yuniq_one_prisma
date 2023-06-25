@@ -78,54 +78,60 @@ class StoreCheckoutController {
             return  res.status(400).json({ message: error.message, data: error });
         }
     }
+
     static confirm_payment = async (req, res) => {
-        const subscriptionId = req.params.subscriptionId;
-        const subscriptionStripe = await stripe.subscriptions.retrieve(subscriptionId);
+            const subscriptionId = req.params.subscriptionId;
+        try {
+            const subscriptionStripe = await stripe.subscriptions.retrieve(subscriptionId);
 
-        if (!subscriptionStripe) {
-            return res.status(404).json({ message: 'Subscription not found' });
-        }
+            if (!subscriptionStripe) {
+                throw new Error('Subscription not found');
+            }
 
-        const paymentIntentId = subscriptionStripe.latest_invoice.payment_intent;
-        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-        const invoice = await stripe.invoices.retrieve(subscriptionStripe.latest_invoice);
-        const invoiceLink = invoice.hosted_invoice_url;
+            const paymentIntentId = subscriptionStripe.latest_invoice.payment_intent;
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+            const invoice = await stripe.invoices.retrieve(subscriptionStripe.latest_invoice);
+            const invoiceLink = invoice.hosted_invoice_url;
 
-        if (paymentIntent.status === "succeeded") {
-            const stripeCustomerId = subscriptionStripe.customer;
-            const userId = parseInt(subscriptionStripe.metadata.userId);
+            if (paymentIntent.status === "succeeded") {
+                const stripeCustomerId = subscriptionStripe.customer;
+                const userId = parseInt(subscriptionStripe.metadata.userId);
 
-            const user = await UserService.updateUserProfile(userId, {
-                stripeCustomerId: stripeCustomerId,
-                stripeSubscriptionId: subscriptionStripe.id
-            });
+                const user = await UserService.updateUserProfile(userId, {
+                    stripeCustomerId: stripeCustomerId,
+                    stripeSubscriptionId: subscriptionStripe.id
+                });
 
-            const PaymentDetails = {
-                subscriptionId: subscriptionStripe.id,
-                amount: paymentIntent.amount / 100, // Convert from cents to dollars
-                status: paymentIntent.status,
-                brand: subscriptionStripe.metadata.brand,
-                last4: subscriptionStripe.metadata.last4,
-                date: new Date(paymentIntent.created * 1000), // Convert from Unix timestamp to JS Date object
-                invoiceLink: invoiceLink // Added invoice link to PaymentDetails
-            };
+                const PaymentDetails = {
+                    subscriptionId: subscriptionStripe.id,
+                    amount: paymentIntent.amount / 100, // Convert from cents to dollars
+                    status: paymentIntent.status,
+                    brand: subscriptionStripe.metadata.brand,
+                    last4: subscriptionStripe.metadata.last4,
+                    date: new Date(paymentIntent.created * 1000), // Convert from Unix timestamp to JS Date object
+                    invoiceLink: invoiceLink // Added invoice link to PaymentDetails
+                };
 
-            const payment = await StoreService.createPayment(userId, PaymentDetails);
+                const payment = await StoreService.createPayment(userId, PaymentDetails);
 
-            res.status(200).json({
-                message: "Payment confirmed",
-                data: {
-                    payment,
-                    user
-                }
-            });
-        } else {
+                res.status(200).json({
+                    message: "Payment confirmed",
+                    data: {
+                        payment,
+                        user
+                    }
+                });
+            } else {
+                throw new Error("Payment failed");
+            }
+        } catch (error) {
             res.status(400).json({
-                message: "Payment failed",
-                data: paymentIntent
+                message: error.message,
+                data: error
             });
         }
     };
+
     static addPurchase = async (req, res) => {
         try {
             const userId = req.user.id;
