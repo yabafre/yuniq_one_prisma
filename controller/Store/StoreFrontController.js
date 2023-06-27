@@ -31,12 +31,12 @@ class StoreFrontController {
     };
     getCollectionById = async (req, res) => {
         try {
-            const collectionId = req.params.id;
+            const collectionId = req.params.collectionId;
             if (!collectionId) {
                 throw new Error("Collection id not found");
             }
             const collection = await StoreService.getCollectionById(collectionId);
-            if (collection.length === 0) {
+            if (collection.collection.length === 0) {
                 throw new Error("Nothing collection");
             }
             return res.status(200).json({message: "Collection found", data: collection});
@@ -89,6 +89,17 @@ class StoreFrontController {
             return res.status(400).json({ message: error.message });
         }
     };
+    getEvents = async (req, res) => {
+        try {
+            const events = await StoreService.getEvents();
+            if (!events) {
+                throw new Error("Nothing events");
+            }
+            return res.status(200).json({message: "Events found", data: events});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
+    }
     StoreCheckout = StoreCheckoutController
 
 }

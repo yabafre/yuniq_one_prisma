@@ -10,7 +10,7 @@ class StoreCheckoutController {
         const subscriptionId = parseInt(req.params.id);
         const { paymentMethodId, stripePriceId } = req.body;
         const userId = req.user.id;
-
+        console.log(req.body)
         try {
             if (!paymentMethodId) {
                 throw new Error("Payment method ID not found");
@@ -21,15 +21,15 @@ class StoreCheckoutController {
             if (!subscriptionId) {
                 throw new Error("Subscription id not found");
             }
-            const subscription = await StoreService.subscribe(subscriptionId, userId);
+            const subscription = await StoreService.checkout(userId,subscriptionId);
             const customer = await stripe.customers.create({
-                email: subscription.email,
-                name: subscription.firstname + " " + subscription.lastname,
-                phone: subscription.phone,
+                email: subscription.user.email,
+                name: subscription.user.firstname + " " + subscription.user.lastname,
+                phone: subscription.user.phone,
                 address: {
-                    city: subscription.city,
-                    line1: subscription.location,
-                    postal_code: subscription.zip,
+                    city: subscription.user.city,
+                    line1: subscription.user.location,
+                    postal_code: subscription.user.zip,
                 },
                 payment_method: paymentMethodId,
                 invoice_settings: {
@@ -45,9 +45,9 @@ class StoreCheckoutController {
                 customer: customer.id,
                 payment_method: paymentMethodId,
                 currency: 'eur', // Update this to your currency
-                amount: subscription.price * 100,
-                confirm: true,
-                off_session: true,
+                amount: parseInt(subscription.subscription.price) * 100, // Update the amount to match the price of the subscription plan
+                confirm: false,
+                off_session: false,
                 metadata: {
                     userId: userId.toString(),
                     stripeCustomerId: customer.id,
@@ -55,46 +55,93 @@ class StoreCheckoutController {
                     last4: paymentMethod.card.last4,
                 },
             });
-
-            if (paymentIntent.status === 'requires_action') {
-                return res.status(200).json({ requiresAction: true, paymentIntentClientSecret: paymentIntent.client_secret });
-            } else if (paymentIntent.status === 'succeeded') {
-                // Handle successful payment
-                const subscriptionStripe = await stripe.subscriptions.create({
-                    customer: customer.id,
-                    items: [
-                        {
-                            plan: stripePriceId,
-                        },
-                    ],
-                    default_payment_method: paymentMethodId,
-                });
-
-                return res.status(200).json({status: "succeeded", redirect: `http://localhost:3000/api/store/confirm_payment/${subscriptionStripe.id}`, data: subscriptionStripe});
-            } else {
-                return  res.status(401).json({status: "failed", data: paymentIntent});
-            }
+            console.log('paymentIntent :',paymentIntent)
+            res.status(200).json({
+                paymentIntentClientSecret: paymentIntent.client_secret,
+                paymentIntentId: paymentIntent.id
+            });
         } catch (error) {
+            console.error('Erreur dans la méthode subscribe:', error);
             return  res.status(400).json({ message: error.message, data: error });
         }
     }
+    static subscribeSecondStep = async (req, res) => {
+        const subscriptionId = parseInt(req.params.id);
+        const { paymentIntentId, stripePriceId } = req.body;
 
+        try {
+            if (!paymentIntentId) {
+                throw new Error("Payment intent ID not found");
+            }
+            if (!stripePriceId) {
+                throw new Error("Stripe price id not found");
+            }
+            if (!subscriptionId) {
+                throw new Error("Subscription id not found");
+            }
+
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+            const paymentMethod = await stripe.paymentMethods.retrieve(paymentIntent.payment_method);
+            console.log('paymentIntent step 2:', paymentIntent);
+
+            const subscriptionStripe = await stripe.subscriptions.create({
+                customer: paymentIntent.customer,
+                items: [
+                    {
+                        plan: stripePriceId,
+                    },
+                ],
+                default_payment_method: paymentIntent.payment_method,
+                collection_method: 'charge_automatically',
+                metadata: {
+                    userId: paymentIntent.metadata.userId,
+                    brand: paymentMethod.card.brand,
+                    last4: paymentMethod.card.last4,
+                },
+                expand: ['latest_invoice'],
+            });
+
+            const paymentIntentSubscription = await stripe.paymentIntents.retrieve(subscriptionStripe.latest_invoice.payment_intent);
+
+            if (paymentIntentSubscription.status === 'requires_action' &&
+                paymentIntentSubscription.next_action.type === 'use_stripe_sdk') {
+                // Tell the client to handle the action
+                res.json({
+                    requires_action: true,
+                    payment_intent_client_secret: paymentIntentSubscription.client_secret,
+                    redirect: subscriptionStripe.id,
+                });
+            } else if (paymentIntentSubscription.status === 'succeeded') {
+                // The payment didn’t need any additional actions and completed!
+                // Handle post-payment fulfillment
+                // Update user subscription
+                await StoreService.subscribe(subscriptionId, paymentIntent.metadata.userId);
+                return res.status(200).json({ status: "succeeded", redirect: subscriptionStripe.id, data: subscriptionStripe });
+            }
+        } catch (error) {
+            console.error('Erreur dans la méthode subscribeSecondStep:', error);
+            return res.status(400).json({ message: error.message, data: error });
+        }
+    };
     static confirm_payment = async (req, res) => {
             const subscriptionId = req.params.subscriptionId;
         try {
-            const subscriptionStripe = await stripe.subscriptions.retrieve(subscriptionId);
-
-            if (!subscriptionStripe) {
-                throw new Error('Subscription not found');
+            const subscriptionStripe = await stripe.subscriptions.retrieve(subscriptionId, {
+                expand: ['latest_invoice.payment_intent'],
+            });
+            if (!subscriptionStripe || !subscriptionStripe.latest_invoice || !subscriptionStripe.latest_invoice.payment_intent) {
+                throw new Error('Subscription not found or invoice not yet available');
             }
 
-            const paymentIntentId = subscriptionStripe.latest_invoice.payment_intent;
+            const paymentIntentId = subscriptionStripe.latest_invoice.payment_intent.id;
+            const invoiceLink = subscriptionStripe.latest_invoice.hosted_invoice_url;
             const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-            const invoice = await stripe.invoices.retrieve(subscriptionStripe.latest_invoice);
-            const invoiceLink = invoice.hosted_invoice_url;
-
+            // const invoice = await stripe.invoices.retrieve(subscriptionStripe.latest_invoice);
+            // const invoiceLink = invoice.hosted_invoice_url;
+            console.log('paymentIntent :',paymentIntent)
             if (paymentIntent.status === "succeeded") {
                 const stripeCustomerId = subscriptionStripe.customer;
+                console.log('paymentIntent :',paymentIntent)
                 const userId = parseInt(subscriptionStripe.metadata.userId);
 
                 const user = await UserService.updateUserProfile(userId, {
@@ -131,7 +178,6 @@ class StoreCheckoutController {
             });
         }
     };
-
     static addPurchase = async (req, res) => {
         try {
             const userId = req.user.id;

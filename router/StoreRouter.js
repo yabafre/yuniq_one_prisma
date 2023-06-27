@@ -1,6 +1,7 @@
 const express = require('express');
 const authMiddleware = require("../middleware/auth");
 const checkSubscription = require("../middleware/checkSubscription");
+const checkCollectionsAccess = require("../middleware/checkCollectionsAccess");
 const StoreFrontController = require ("../controller/Store/StoreFrontController");
 
 exports.router = (() => {
@@ -11,9 +12,10 @@ exports.router = (() => {
 
     router.route('/').get(StoreFrontController.home);
     // // routes for Store collections
-    router.route('/collection').get(StoreFrontController.getCollection);
-    router.route('/collection/:id').get(StoreFrontController.getCollectionById);
-    router.route('/collection/:collectionId/sneaker/:sneakerId').get(StoreFrontController.getSneakerById);
+    router.route('/collections').get(StoreFrontController.getCollection);
+    router.route('/collection').get(checkCollectionsAccess,StoreFrontController.getCollection);
+    router.route('/collection/:collectionId').get(checkCollectionsAccess,StoreFrontController.getCollectionById);
+    router.route('/collection/:collectionId/sneaker/:sneakerId').get(checkCollectionsAccess,StoreFrontController.getSneakerById);
     // router.route('/sneakers/:sneakerId').get(StoreFrontController.getSneakerDetailsById);
     //
     // // routes for Store subscriptions
@@ -21,6 +23,7 @@ exports.router = (() => {
     router.route('/subscriptions/:id').get(StoreFrontController.getSubscriptionById);
     // routes for Store checkout (payment) stripe
     router.route('/subscriptions/:id/subscribe').post(StoreFrontController.StoreCheckout.subscribe);
+    router.route('/subscriptions/:id/subscribeSecondStep').post(StoreFrontController.StoreCheckout.subscribeSecondStep);
     router.route('/confirm_payment/:subscriptionId').get(StoreFrontController.StoreCheckout.confirm_payment);
     // routes for Store checkout session (payment) stripe
     router.route('/checkout').post(StoreFrontController.StoreCheckout.checkout);
@@ -29,7 +32,7 @@ exports.router = (() => {
     // router.use(checkSubscription);
     router.route('/purchase/:sneakerId').get(StoreFrontController.StoreCheckout.addPurchase);
     // // routes for Store events
-    // router.route('/events').get(StoreFrontController.getEvents);
+    router.route('/events').get(StoreFrontController.getEvents);
     // router.route('/events/:id').get(StoreFrontController.getEventById);
     // router.route('/events/:id/subscribe').post(StoreFrontController.eventSubscribe);
 

@@ -14,6 +14,36 @@ class StoreService {
         console.log(userWithoutPassword)
         return userWithoutPassword;
     }
+    getUserWithSubscription = async (userId) => {
+        return prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+            include: {
+                subscription: true,
+            },
+        });
+    };
+    getCollectionsForSubscription = async (subscriptionId) => {
+        return prisma.subscription.findUnique({
+            where: {
+                id: subscriptionId,
+            },
+            include: {
+                relatedCollections: true,
+            },
+        });
+    };
+    getSneakerForCollection = async (collectionId) => {
+        return prisma.collection.findUnique({
+            where: {
+                id: parseInt(collectionId),
+            },
+            include: {
+                sneakers: true,
+            },
+        });
+    };
     getCollection = async () => {
         const collections = await prisma.collection.findMany(
             {
@@ -29,7 +59,7 @@ class StoreService {
         return collections;
     };
     getCollectionById = async (id) => {
-        const collection = await prisma.collection.findMany({
+        const collection = await prisma.collection.findUnique({
             where: {
                 id: parseInt(id) // convertir la chaîne de caractères en entier
             },
@@ -44,7 +74,21 @@ class StoreService {
                 }
             }
         });
-        return collection;
+        const sneakers = await prisma.sneaker.findMany({
+            where: {
+                relatedCollections: {
+                    some: {
+                        id: parseInt(id)
+                    }
+                }
+            },
+            include: {
+                sizeSneaker: true,
+                relatedCollections: true,
+                _count: true,
+            }
+        });
+        return { collection, sneakers };
     };
     getSneakerById = async (collectionId, sneakerId) => {
         const sneaker = await prisma.sneaker.findMany({
@@ -213,17 +257,19 @@ class StoreService {
             throw error;
         }
     }
-
     getEvents = async () => {
-        const events = await Event.find();
+        const events = await prisma.event.findMany({
+            include: {
+                _count: true,
+                sneakers: true,
+            }
+        });
         return events;
     };
-
     getEventById = async (id) => {
         const event = await Event.findById(id);
         return event;
     };
-
     eventSubscribe = async (eventId, userId) => {
         const event = await Event.findById(eventId);
         const user = await User.findById(userId);
@@ -231,7 +277,6 @@ class StoreService {
         await user.save();
         return event;
     };
-
     checkout = async (userId, subscriptionId) => {
         const user = await prisma.user.findUnique({
             where: {
@@ -253,7 +298,6 @@ class StoreService {
 
         return { user, subscription};
     };
-
 }
 
 module.exports = new StoreService();

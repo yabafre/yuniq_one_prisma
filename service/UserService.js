@@ -36,15 +36,25 @@ class UserService{
     }
 
     updateUserProfile = async (userId, updateData) => {
+        console.log('userId', userId)
+        console.log('updateData', updateData)
+        const parsedUserId = parseInt(userId);
+        if (isNaN(parsedUserId)) {
+            throw new Error('Invalid userId');
+        }
+
         const updatedProfile = await prisma.user.update({
             where: {
-                id: userId
+                id: parsedUserId
             },
             data: updateData
         });
+
         const updatedProfileWithoutPassword = _.omit(updatedProfile, 'password');
         return updatedProfileWithoutPassword;
     };
+
+
 
     deleteUserProfile = async (userId) => {
         let message;

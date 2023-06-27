@@ -138,7 +138,7 @@ module.exports = {
                     id: userFind.id,
                 },
             };
-           const token = JWT.sign(payload, SECRET_KEY, { expiresIn: '1h' });
+           const token = JWT.sign(payload, SECRET_KEY, { expiresIn: '30d' });
             console.log(token)
             if (!token) {
                 throw new Error ('Token non généré')
