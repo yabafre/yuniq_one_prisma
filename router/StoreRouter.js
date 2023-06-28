@@ -16,7 +16,7 @@ exports.router = (() => {
     router.route('/').get(StoreFrontController.home);
     // // routes for Store collections
     router.route('/collections').get(StoreFrontController.getCollection);
-    router.route('/collection').get(checkCollectionsAccess,StoreFrontController.getCollection);
+    router.route('/collection').get(StoreFrontController.getCollection);
     router.route('/collection/:collectionId').get(checkCollectionsAccess,StoreFrontController.getCollectionById);
     router.route('/collection/:collectionId/sneaker/:sneakerId').get(checkCollectionsAccess,StoreFrontController.getSneakerById);
     //
