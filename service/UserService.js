@@ -57,18 +57,15 @@ class UserService{
 
 
     deleteUserProfile = async (userId) => {
-        let message;
         try {
-            await prisma.user.delete({
+           const user = await prisma.user.delete({
                 where: {
                     id: userId
                 }
             });
-            message = "Profile deleted successfully";
-            return message;
+            return user;
         } catch (error) {
-            message = "Error deleting profile";
-            return message;
+            throw new Error(error.message);
         }
     };
 

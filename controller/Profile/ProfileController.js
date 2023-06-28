@@ -2,6 +2,7 @@ require('dotenv').config();
 const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE, STRIPE_WEBHOOK_SECRET} = process.env;
 const UserService = require ("../../service/UserService");
 const StoreService = require ("../../service/StoreService");
+const MailService = require("../../service/MailService");
 const bcrypt = require("bcryptjs");
 const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
 
@@ -60,6 +61,17 @@ class ProfileController{
             if (!deleteById) {
                 throw new Error("User not found");
             } else {
+                // envoi de mail de confirmation de suppression de compte et de désinscription de l'abonnement
+                const title = "Suppression de votre compte";
+                const htmlBody = `<div style="text-align: center; font-size: 1.2rem; font-weight: bold; color: #000000;">
+                                    <p>Cher(e) ${user.firstName} ${user.lastName},</p> 
+                                    <p>Nous vous confirmons la suppression de votre compte.</p>
+                                    <p>Vous ne recevrez plus de mail de notre part.</p>
+                                    <p>Nous vous remercions pour votre confiance.</p>
+                                    <p>L'équipe YUNIQ</p>
+                                </div>`;
+                const htmlContent = MailService.createHtmlContent(title, htmlBody);
+                await MailService.sendMail(user.email, title, htmlContent);
                 return res.status(200).json({message: "User deleted successfully", data: deleteById});
             }
         } catch (error) {
@@ -128,6 +140,18 @@ class ProfileController{
                     },
                 ],
             });
+
+            // envoi de mail de confirmation de changement d'abonnement
+            const title = "Changement d'abonnement";
+            const htmlBody = `<div style="text-align: center; font-size: 1.2rem; font-weight: bold; color: #000000;">
+                                <p>Cher(e) ${updatedUser.firstName} ${updatedUser.lastName},</p> 
+                                <p>Nous vous confirmons le changement de votre abonnement.</p>
+                                <p>Vous avez choisi l'abonnement ${newSubscription.name}.</p>
+                                <p>Nous vous remercions pour votre confiance.</p>
+                                <p>L'équipe YUNIQ</p>
+                            </div>`;
+            const htmlContent = MailService.createHtmlContent(title, htmlBody);
+            await MailService.sendMail(updatedUser.email, title, htmlContent);
 
             res.status(200).json({ message: "Subscription updated", user: updatedUser });
 

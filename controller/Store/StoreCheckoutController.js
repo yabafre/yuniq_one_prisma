@@ -1,5 +1,6 @@
 const StoreService = require("../../service/StoreService");
 const UserService = require("../../service/UserService");
+const MailService = require("../../service/MailService");
 require('dotenv').config();
 const {VITE_APP_STRIPE_API_SECRET, STRIPE_API_FORFAIT_ONE} = process.env;
 const stripe = require("stripe")(VITE_APP_STRIPE_API_SECRET);
@@ -115,7 +116,7 @@ class StoreCheckoutController {
                 // The payment didn’t need any additional actions and completed!
                 // Handle post-payment fulfillment
                 // Update user subscription
-                await StoreService.subscribe(subscriptionId, paymentIntent.metadata.userId);
+               const user = await StoreService.subscribe(subscriptionId, paymentIntent.metadata.userId);
                 return res.status(200).json({ status: "succeeded", redirect: subscriptionStripe.id, data: subscriptionStripe });
             }
         } catch (error) {
@@ -160,7 +161,19 @@ class StoreCheckoutController {
                 };
 
                 const payment = await StoreService.createPayment(userId, PaymentDetails);
-
+                // Send mail confirm success subscription with invoice and subscription details to user
+                const title = 'Abonnement confirmé';
+                const htmlBody = `<div  style="text-align: center; margin: 0 auto; width: 80%; padding: 20px; border: 1px solid #ccc; border-radius: 10px;">
+                                    <h1 style="color: #3f51b5;">Abonnement confirmé</h1>
+                                    <p>Bonjour ${user.firstname} ${user.lastname},</p>
+                                    <p>Votre abonnement a bien été validé.</p>
+                                    <p>Vous pouvez retrouver les détails de votre abonnement dans votre espace personnel.</p>
+                                    <p>Vous pouvez également retrouver votre facture en cliquant sur le lien ci-dessous.</p>
+                                    <a href="${invoiceLink}" target="_blank">Voir la facture</a>
+                                    <p>À bientôt sur <a href="${process.env.CLIENT_URL}">Yuniq</a></p>
+                                </div>`;
+                const htmlContent = MailService.createHtmlContent(title, htmlBody);
+                await MailService.sendMail(user.email, title, htmlContent);
                 res.status(200).json({
                     message: "Payment confirmed",
                     data: {

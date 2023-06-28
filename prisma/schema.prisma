@@ -3,9 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-  // relationMode = "prisma"
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model User {
@@ -173,6 +173,17 @@ model codePromo {
   endTime   String
   duration  String
   valid     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  firstname String
+  lastname  String
+  email     String
+  subject   String
+  message   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

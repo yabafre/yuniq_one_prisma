@@ -259,6 +259,12 @@ class StoreService {
     }
     getEvents = async () => {
         const events = await prisma.event.findMany({
+            where: {
+                etat: true,
+            },
+            orderBy: {
+                date: 'desc',
+            },
             include: {
                 _count: true,
                 sneakers: true,
@@ -266,6 +272,30 @@ class StoreService {
         });
         return events;
     };
+    getSneakerByEvent = async (idEvent,sneakerId) => {
+        const event = await prisma.event.findUnique({
+            where: {
+                id: parseInt(idEvent)
+            },
+            include: {
+                sneakers: true,
+            }
+        });
+        const checkSneaker = event.sneakers.find(sneaker => sneaker.sneakerId === parseInt(sneakerId));
+        if (checkSneaker) {
+            const sneaker = await prisma.sneaker.findUnique({
+                where: {
+                    id: parseInt(sneakerId)
+                },
+                include: {
+                    relatedCollections: true,
+                }
+            });
+            return sneaker;
+        } else {
+            return false;
+        }
+    }
     getEventById = async (id) => {
         const event = await Event.findById(id);
         return event;

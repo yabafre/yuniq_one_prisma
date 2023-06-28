@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 require("dotenv").config();
+const MailService = require("../../service/MailService");
 const JWT = require("jsonwebtoken");
 const UserService = require("../../service/UserService");
 const DateTime = require("luxon").DateTime;
@@ -110,6 +110,18 @@ module.exports = {
             if (!user) {
                 throw new Error ('Utilisateur n\'a  pas être créé');
             } else {
+                // envoi du mail de remerciement pour l'inscription
+                const title = "Cher nouveau Yuser,...";
+                const htmlBody = `<div style="text-align: center; margin: 0 auto; width: 50%; padding: 20px; border: 1px solid #000; border-radius: 10px;">
+                <h1 style="color: #000;">Bienvenue chez Yuniq</h1>  
+                <p style="color: #000;">Bonjour ${firstname} ${lastname},</p>
+                <p style="color: #000;">Nous sommes ravis de vous compter parmi nos Yusers.</p>
+                <p style="color: #000;">Vous pouvez dès à présent vous connecter à votre compte et profiter de nos services.</p>
+                <p style="color: #000;">A très vite sur Yuniq !</p>
+                <p style="color: #000;">L'équipe Yuniq</p>
+                </div>`;
+                const htmlContent = MailService.createHtmlContent(title, htmlBody);
+                await MailService.sendMail(email, title, htmlContent);
                 res.status(201).json({ message: "Utilisateur créé" });
             }
         } catch (error) {
@@ -185,30 +197,20 @@ module.exports = {
             });
 
             // Envoyer un e-mail de réinitialisation de mot de passe
-            const transporter = nodemailer.createTransport({
-                service: "gmail",
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASSWORD,
-                },
-            });
-
-            const mailOptions = {
-                to: user.email,
-                from: process.env.EMAIL_USER,
-                subject: "Réinitialisation de votre mot de passe",
-                text: `Vous recevez ce message parce que vous (ou quelqu'un d'autre) avez demandé la réinitialisation du mot de passe de votre compte.
-      Veuillez cliquer sur le lien suivant, ou copiez-le dans votre navigateur pour terminer le processus de réinitialisation du mot de passe:
-      http://${req.headers.host}/api/auth/reset-password?resetToken=${resetToken}
-      Si vous n'avez pas demandé cette réinitialisation, ignorez cet e-mail et votre mot de passe restera inchangé.`,
-            };
-
-            transporter.sendMail(mailOptions, (err) => {
-                if (err) {
-                    return res.status(400).json({ message: "Erreur lors de l'envoi de l'e-mail", err });
-                }
-                res.status(200).json({ message: "E-mail de réinitialisation de mot de passe envoyé" });
-            });
+            const title = "Réinitialisation de votre mot de passe";
+            const htmlBody = `<div style="text-align: center; margin: 0 auto; width: 50%; padding: 20px; border: 1px solid #000; border-radius: 10px;">
+            <h1 style="color: #000;">Réinitialisation de votre mot de passe</h1>
+            <p style="color: #000;">Bonjour ${user.firstname} ${user.lastname},</p>
+            <p style="color: #000;">Vous avez demandé la réinitialisation de votre mot de passe.</p>
+            <p style="color: #000;">Veuillez cliquer sur le lien ci-dessous pour réinitialiser votre mot de passe.</p>
+            <a href="${process.env.CLIENT_URL}/reset-password?resetToken=${resetToken}" style="color: #000;">Réinitialiser mon mot de passe</a>
+            <p style="color: #000;">Si vous n'avez pas demandé de réinitialisation de mot de passe, veuillez ignorer cet e-mail.</p>
+            <p style="color: #000;">A très vite sur Yuniq !</p>
+            <p style="color: #000;">L'équipe Yuniq</p>
+            </div>`;
+            const htmlContent = MailService.createHtmlContent(title, htmlBody);
+            await MailService.sendMail(email, title, htmlContent);
+            res.status(200).json({ message: "Un e-mail de réinitialisation de mot de passe a été envoyé à votre adresse e-mail" });
         } catch (error) {
             res.status(400).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
         }
@@ -219,28 +221,26 @@ module.exports = {
         const { newPassword } = req.body;
 
         try {
-            const user = await prisma.user.findFirst({
+            const user = await prisma.user.findUnique({
                 where: {
                     resetPasswordToken: resetToken,
                 }
             });
 
             if (!user) {
-                return res.status(400).json({ message: "Token invalide ou expiré" });
+                throw new Error("Token invalide ou expiré");
             }
             // Valider le nouveau mot de passe
             const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/;
             if (!regexPassword.test(newPassword)) {
-                return res.status(400).json({
-                    message: "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial",
-                });
+                throw new Error("Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial");
             }
             // Hacher le nouveau mot de passe et le mettre à jour dans la base de données
             const salt = bcrypt.genSaltSync(10);
             const hashedPassword = bcrypt.hashSync(newPassword, salt);
             await prisma.user.update({
                 where: {
-                    id: user.id,
+                    id: parseInt(user.id)
                 },
                 data: {
                     password: hashedPassword,
@@ -249,9 +249,50 @@ module.exports = {
                 }
             });
 
+            // Envoyer un e-mail de confirmation de réinitialisation de mot de passe
+            const title = "Confirmation de réinitialisation de votre mot de passe";
+            const htmlBody = `<div style="text-align: center; margin: 0 auto; width: 50%; padding: 20px; border: 1px solid #000; border-radius: 10px;">
+            <h1 style="color: #000;">Confirmation de réinitialisation de votre mot de passe</h1>
+            <p style="color: #000;">Bonjour ${user.firstname} ${user.lastname},</p>
+            <p style="color: #000;">Votre mot de passe a été réinitialisé avec succès.</p>
+            <p style="color: #000;">A très vite sur Yuniq !</p>
+            <p style="color: #000;">L'équipe Yuniq</p>
+            </div>`;
+            const htmlContent = MailService.createHtmlContent(title, htmlBody);
+            await MailService.sendMail(user.email, title, htmlContent);
+
             res.status(200).json({ message: "Mot de passe réinitialisé avec succès" });
         } catch (error) {
             res.status(400).json({ message: "Erreur lors de la réinitialisation du mot de passe", error });
+        }
+    },
+    // contact save in database and send email
+    async contact(req, res) {
+        const { firstname, lastname, email, subject ,message } = req.body;
+        console.log(req.body)
+        try {
+            const contact = await prisma.contact.create({
+                data: {
+                    firstname: firstname,
+                    lastname: lastname,
+                    email: email,
+                    subject: subject,
+                    message: message,
+                }
+            });
+            if (!contact) {
+                throw new Error ('Contact n\'a  pas être créé');
+            } else {
+                // send email
+                const htmlContent = MailService.contactHtmlEmail(firstname,subject,message);
+                const send = await MailService.sendMail(email,subject,htmlContent);
+                console.log(send)
+                res.status(200).json({message: 'Email envoyé avec succès'});
+            }
+
+        } catch (error) {
+            console.log(error);
+            res.status(400).json({message: error.message});
         }
     }
 };

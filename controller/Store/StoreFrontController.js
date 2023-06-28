@@ -63,6 +63,25 @@ class StoreFrontController {
             return res.status(400).json({ message: error.message });
         }
     };
+    getSneakerByEvent = async (req, res) => {
+        try {
+            const sneakerId = req.params.sneakerId;
+            if (!sneakerId) {
+                throw new Error("Sneaker id not found");
+            }
+            const idEvent = req.params.idEvent;
+            if (!idEvent) {
+                throw new Error("Event id not found");
+            }
+            const sneaker = await StoreService.getSneakerByEvent(idEvent,sneakerId);
+            if (!sneaker) {
+                throw new Error("Nothing sneaker");
+            }
+            return res.status(200).json({message: "Sneaker found", data: sneaker});
+        } catch (error) {
+            return res.status(400).json({ message: error.message });
+        }
+    }
     getSubscriptions = async (req, res) => {
         try {
             const subscriptions = await StoreService.getSubscriptions();
