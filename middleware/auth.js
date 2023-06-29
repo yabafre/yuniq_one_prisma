@@ -21,9 +21,9 @@ async function authMiddleware(req, res, next) {
         }
         req.user = decoded.user;
         next();
-    } catch (e) {
-        console.error(e);
-        res.status(500).send({message: e.message});
+    } catch (err) {
+        console.error(err);
+        res.status(401).json({ error: err, message: err.message });
     }
 }
 
